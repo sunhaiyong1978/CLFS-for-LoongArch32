@@ -416,7 +416,24 @@ popd
 
 　　Glibc是目标系统的一部分，因此指定prefix等路径参数时是按照常规系统的路径进行设置的，所以必须在安装时指定DESTDIR来指定安装到存放目标系统的目录中。
 
-### 3.9 交叉编译器之GCC（完整版）
+
+### 3.9 Libxcrypt
+	https://github.com/besser82/libxcrypt/releases/download/v4.4.38/libxcrypt-4.4.38.tar.xz
+	较新的glibc中不再提供libcrypt库的支持，需要使用libxcrypt软件包来代替原glibc中的libcrypto库。
+
+```sh
+tar xvf ${DOWNLOADDIR}/libxcrypt-4.4.38.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxcrypt-4.4.38
+        patch -Np1 -i ${DOWNLOADDIR}/0001-fix-configure-error-under-loongarch32-architecture.patch
+	CFLAGS="${CFLAGS} -Wno-error=stringop-overread" \
+	./configure --prefix=/usr --host=${CROSS_TARGET} --build=${CROSS_HOST} \
+                 --libdir=/usr/lib32 --disable-werror
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+### 3.10 交叉编译器之GCC（完整版）
 　　完成目标系统的Glibc之后就可以着手制作交叉工具链中完整版的GCC了，制作步骤如下：
 
 ```sh
@@ -446,7 +463,7 @@ popd
 * ```--enable-threads=posix```,可以设置线程支持了。    
 * ```--enable-languages=c,c++,fortran,objc,obj-c++,lto```，可以支持更多的开发语言了。
 
-### 3.10 File
+### 3.11 File
 　　https://astron.com/pub/file/file-5.46.tar.gz
 
 　　File软件包的官方发布版已经集成了LoongArch的支持，可以识别出LoongArch架构的二进制文件，制作时使用5.40以上的版本。
@@ -460,7 +477,7 @@ pushd ${BUILDDIR}/file-5.46
 popd
 ```
 
-### 3.11 Autoconf
+### 3.12 Autoconf
 　　https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz
 
 ```sh
@@ -472,7 +489,7 @@ pushd ${BUILDDIR}/autoconf-2.72
 popd
 ```
 
-### 3.12 Autoconf-Archive
+### 3.13 Autoconf-Archive
 　　https://mirror.truenetwork.ru/gnu/autoconf-archive/autoconf-archive-2024.10.16.tar.xz
 
 ```sh
@@ -484,7 +501,7 @@ pushd ${BUILDDIR}/autoconf-archive-2024.10.16
 popd
 ```
 
-### 3.13 Libtool
+### 3.14 Libtool
 　　https://ftp.gnu.org/gnu/libtool/libtool-2.5.4.tar.xz
 
 ```sh
@@ -496,7 +513,7 @@ pushd ${BUILDDIR}/libtool-2.5.4
 popd
 ```
 
-### 3.14 Pkg-Config
+### 3.15 Pkg-Config
 　　https://distfiles.dereferenced.org/pkgconf/pkgconf-2.3.0.tar.xz
 
 　　为了能在交叉编译目标系统的过程中使用目标系统中已经安装的“pc”文件，我们在交叉工具链的目录中安装一个专门用来从目标系统目录中的查询“pc”文件的pkg-config命令，制作过程如下：
@@ -511,6 +528,146 @@ pushd ${BUILDDIR}/pkgconf-2.3.0
         ln -sf pkgconf ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-pkg-config
 popd
 ```
+
+### 3.16 Groff
+	https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+	编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
+
+```sh
+tar xvf ${DOWNLOADDIR}/groff-1.23.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/groff-1.23.0
+	PAGE=A4 ./configure --prefix=${SYSDIR}/cross-tools
+	make ${JOBS}
+	make install
+popd
+```
+
+### 3.17 Perl
+	https://www.cpan.org/src/5.0/perl-5.38.0.tar.xz
+	为了配合目标系统中编译Perl相关的软件包时能使用正确的路径，因此我们需要在交叉工具链中安装一个目标系统相同版本的Perl软件包。
+
+```sh
+tar xvf ${DOWNLOADDIR}/perl-5.38.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/perl-5.38.0
+    sed -i "s@/usr/include@${SYSDIR}/cross-tools/include@g" ext/Errno/Errno_pm.PL
+    CFLAGS="-D_LARGEFILE64_SOURCE" ./configure.gnu --prefix=${SYSDIR}/cross-tools \
+            -Dprivlib=${SYSDIR}/cross-tools/lib/perl5/5.3x/core_perl \
+            -Darchlib=${SYSDIR}/cross-tools/lib64/perl5/5.3x/core_perl \
+            -Dsitelib=${SYSDIR}/cross-tools/lib/perl5/5.3x/site_perl \
+            -Dsitearch=${SYSDIR}/cross-tools/lib64/perl5/5.3x/site_perl \
+            -Dvendorlib=${SYSDIR}/cross-tools/lib/perl5/5.3x/vendor_perl \
+            -Dvendorarch=${SYSDIR}/cross-tools/lib64/perl5/5.3x/vendor_perl
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.18 XML-Parser
+	https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
+	给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
+
+```sh
+tar xvf ${DOWNLOADDIR}/XML-Parser-2.47.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/XML-Parser-2.47
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.19 URI
+	https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
+	给交叉工具链中的Perl提供URI软件包提供的Perl组件。
+
+```sh
+tar xvf ${DOWNLOADDIR}/URI-5.31.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/URI-5.31
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.20 Python3
+	https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/Python-3.13.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.13.1
+	CFLAGS="${CFLAGS} -fPIC"
+	./configure --prefix=${SYSDIR}/cross-tools --with-platlibdir=lib64 \
+	            --disable-shared --with-system-expat --with-system-ffi \
+	            --with-ensurepip=yes --enable-optimizations \
+	            ac_cv_broken_sem_getvalue=yes
+	make ${JOBS}
+	make install
+	sed -i "s@-lutil @@g" ${SYSDIR}/cross-tools/bin/python3.13-config
+	cp ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_{x86_64-linux-gnu,${CROSS_TARGET}}.py
+	sed -i -e "/'CC'/s@'gcc@'${CROSS_TARGET}-gcc@g" \
+	       -e "/'CXX'/s@'g++@'${CROSS_TARGET}-g++@g" \
+	       -e "/'LDSHARED'/s@'gcc@'${CROSS_TARGET}-gcc@g" \
+	       -e "/'SOABI'/s@-x86_64-linux-gnu@@g" \
+	       -e "/'EXT_SUFFIX'/s@-x86_64-linux-gnu@@g" \
+	       ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+popd
+```
+
+### 3.21 Setuptools
+	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+	Setuptools软件包是Python的基础软件包之一。
+
+```sh
+        ${SYSDIR}/cross-tools/bin/python3 setup.py build
+        ${SYSDIR}/cross-tools/bin/python3 setup.py install
+```
+	编译Setuptools软件包建议使用pip命令，但因为当前使用pip命令编译存在依赖问题，所以本次编译Setuptools软件包直接使用python命令运行setup.py脚本进行编译和安装。
+
+
+### 3.22 Pip
+	https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
+	pip软件包是Python的基础软件包之一。
+```sh
+        ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
+```
+
+### 3.23 Flit-Core
+	https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
+
+```sh
+        ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user flit-core 
+```
+
+### 3.24 Wheel
+	https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
+	Wheel软件包是Python的基础软件包之一。
+```sh
+        ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user wheel
+
+```
+
+### 3.25 Setuptools
+	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+	依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
+```sh
+        ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
+```
+
+### 3.26 Meson
+	https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
+	目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
+
+```sh
+tar xvf ${DOWNLOADDIR}/meson-1.7.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.7.0
+    ${SYSDIR}/cross-tools/bin/python3 setup.py build
+    ${SYSDIR}/cross-tools/bin/python3 setup.py install
+popd
+```
+
 
 ## 4 制作目标系统
 　　交叉工具链及其相关的工具制作并安装完成后就可以继续制作目标系统了。
@@ -683,6 +840,56 @@ pushd ${BUILDDIR}/zlib-1.3.1
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
 ```
+
+### Binutils
+　　这次编译的Binutils是目标系统中使用的，在交叉编译阶段不会使用到它。
+
+```sh
+pushd ${BUILDDIR}
+git clone https://github.com/cloudspurs/binutils-gdb.git --depth 1 -b la32
+pushd binutils-gdb
+	rm -rf gdb* libdecnumber readline sim
+	mkdir cross-build
+	pushd cross-build
+		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		             --host=${CROSS_TARGET} --enable-shared --disable-werror \
+		             --with-system-zlib --enable-64-bit-bfd
+		make tooldir=/usr ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot tooldir=/usr install
+	popd
+popd
+popd
+```
+
+### GCC
+　　与上面编译的Binutils一样，这次编译的GCC也是在目标系统中使用的编译器，在交叉编译阶段不会使用到它，但是其提供的libgcc、libstdc++等库可以为后续软件包的编译提供链接用的库。
+
+```sh
+pushd ${BUILDDIR}
+git clone https://github.com/cloudspurs/gcc.git --depth 1 -b la32
+pushd gcc
+	sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+	mkdir cross-build
+	pushd cross-build
+		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		             --host=${CROSS_TARGET} --target=${CROSS_TARGET} \
+		             --enable-__cxa_atexit --enable-threads=posix \
+		             --with-system-zlib --enable-libstdcxx-time \
+		             --enable-checking=release \
+                             --disable-multilib \
+		             --with-build-sysroot=${SYSDIR}/sysroot \
+                             --enable-linker-build-id --with-linker-hash-style=gnu --enable-gnu-unique-object --enable-initfini-array --enable-gnu-indirect-function \
+		             --enable-languages=c,c++,fortran,objc,obj-c++,lto
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+		ln -sv /usr/bin/cpp ${SYSDIR}/sysroot/lib
+		ln -sv gcc ${SYSDIR}/sysroot/usr/bin/cc
+	popd
+popd
+popd
+```
+
+　　因在目标系统中使用，所以编译的完整一些，将C、C++以及Fortran等语言的支持加上。
 
 #### Bzip2
 　　https://www.sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
@@ -926,6 +1133,24 @@ pushd ${BUILDDIR}/sed-4.9
 popd
 ```
 
+#### Pkg-Config
+　　https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pkg-config-0.29.2.tar.gz -C ${BUILDDIR}/
+pushd ${BUILDDIR}/pkg-config-0.29.2
+	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --with-internal-glib --disable-host-tool \
+	            glib_cv_stack_grows=yes glib_cv_uscore=no \
+	            ac_cv_func_posix_getpwuid_r=yes ac_cv_func_posix_getgrgid_r=yes
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	mkdir -p ${SYSDIR}/cross-tools/tmp/bin
+	ln -sf /bin/pkg-config ${SYSDIR}/cross-tools/tmp/bin/${CROSS_TARGET}-pkg-config
+popd
+```
+　　在制作目标系统的Pkg-config软件包的配置过程中因无法探测目标系统中的部分配置设置而会导致配置失败，因此需要在configure阶段强制设置部分参数的取值。
+
 #### PSmisc
 　　https://sourceforge.net/projects/psmisc/files/psmisc//psmisc-23.7.tar.xz
 
@@ -936,6 +1161,85 @@ pushd ${BUILDDIR}/psmisc-23.7
                 ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Gettext
+　　https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gettext-0.23.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gettext-0.23.1
+	sed -i "/hello-c++-kde/d" gettext-tools/examples/Makefile.in
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --disable-static \
+	            --with-libncurses-prefix=${SYSDIR}/sysroot
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libgettext*.la
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libtextstyle.la
+popd
+```
+
+#### Bison
+　　https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/bison-3.8.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/bison-3.8.2
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### TCL
+　　https://sourceforge.net/projects/tcl/files/Tcl//8.6.14//tcl8.6.14-src.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/tcl8.6.14-src.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/tcl8.6.14
+    SRCDIR=$(pwd)
+    pushd unix
+	    ./configure --prefix=/usr --libdir=/usr/lib32 --mandir=/usr/share/man \
+	                --build=${CROSS_HOST} --host=${CROSS_TARGET} --enable-64bit
+	    make ${JOBS}
+	    sed -i -e "s|$SRCDIR/unix|${SYSDIR}/sysroot/usr/lib32|" \
+	           -e "s|$SRCDIR|${SYSDIR}/sysroot/usr/include|" \
+	           -e "/TCL_INCLUDE_SPEC/s|/usr/include|${SYSDIR}/sysroot/usr/include|" \
+	           tclConfig.sh
+	    sed -i -e "s|$SRCDIR/unix/pkgs/tdbc1.1.3|${SYSDIR}/sysroot/usr/lib32/tdbc1.1.3|" \
+               -e "s|$SRCDIR/pkgs/tdbc1.1.3/generic|${SYSDIR}/sysroot/usr/include|"    \
+               -e "s|$SRCDIR/pkgs/tdbc1.1.3/library|${SYSDIR}/sysroot/usr/lib32/tcl8.6|" \
+               -e "s|$SRCDIR/pkgs/tdbc1.1.3|${SYSDIR}/sysroot/usr/include|"            \
+               pkgs/tdbc1.1.3/tdbcConfig.sh
+	    sed -i -e "s|$SRCDIR/unix/pkgs/itcl4.2.2|${SYSDIR}/sysroot/usr/lib32/itcl4.2.2|" \
+               -e "s|$SRCDIR/pkgs/itcl4.2.2/generic|${SYSDIR}/sysroot/usr/include|"    \
+               -e "s|$SRCDIR/pkgs/itcl4.2.2|${SYSDIR}/sysroot/usr/include|"            \
+               pkgs/itcl4.2.2/itclConfig.sh
+	    unset SRCDIR
+	    make DESTDIR=${SYSDIR}/sysroot install
+	    make DESTDIR=${SYSDIR}/sysroot install-private-headers
+	    ln -sfv tclsh8.6 ${SYSDIR}/sysroot/usr/bin/tclsh
+	popd
+popd
+```
+
+#### Expect
+　　https://sourceforge.net/projects/expect/files/Expect//5.45.4//expect5.45.4.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/expect5.45.4.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/expect5.45.4
+    patch -Np1 -i ${DOWNLOADDIR}/0001-enable-cross-compilation.patch
+    autoreconf -ifv
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	            --with-tcl=${SYSDIR}/sysroot/usr/lib32 \
+	            --enable-shared
+	make ${JOBS}
+	make TCLSH_PROG=/usr/bin/tclsh DESTDIR=${SYSDIR}/sysroot install
+	ln -svf expect5.45.4/libexpect5.45.4.so ${SYSDIR}/sysroot/usr/lib32
 popd
 ```
 
@@ -994,6 +1298,103 @@ popd
 ```
 
 　　Bash软件在交叉编译时的配置阶段会有大量的参数探测错误，需要我们手工指定这些参数的真实取值，创建一个文本文件，将这些参数的取值写进去，并在configure配置中增加```--cache-file=config.cache```参数（其中config.cache就是保存参数的文本文件名）。
+
+
+#### bash-completion
+#### libtool
+#### gdbm
+#### gperf
+#### expat
+#### autoconf
+#### autoconf-archive
+#### automake
+#### kmod
+#### openssl
+#### coreutils
+#### check
+#### diffutils
+#### gawk
+#### findutils
+#### intltool
+#### groff
+#### less
+#### gzip
+#### iproute2
+#### kbd
+#### libpipeline
+#### make
+#### patch
+#### libunistring
+#### libpsl
+#### curl
+#### libidn2
+#### man-db
+#### tar
+#### texinfo
+#### sqlite
+#### util-linux
+#### dbus
+#### e2fsprogs
+#### openssh
+#### wget
+#### make-ca
+#### inetutils
+#### wireless_tools
+#### net-tools
+#### libnl
+#### sudo
+#### icu4c
+#### libgpg-error
+#### libgcrypt
+#### libxml2
+#### libxslt
+#### gpm
+#### libevent
+#### links
+#### doxygen
+#### git
+#### ctags
+#### inih
+#### dosfstools
+#### libaio
+#### pcre
+#### pcre2
+#### vim
+#### unrar
+#### zip
+#### unzip
+#### cpio
+#### libmnl
+#### ethtool
+#### libpng
+#### libjpeg-turbo
+#### tiff
+#### lcms
+#### openjpeg
+#### jasper
+#### LibRaw
+#### libmng
+#### freetype
+#### graphite
+#### brotli
+#### freetype
+#### fontconfig
+#### fribidi
+#### nettle
+#### gc
+#### libtasn1
+#### dhcp
+#### busybox
+#### libksba
+#### npth
+#### libassuan
+#### hwdata
+#### dejavu-fonts-ttf
+#### lzo
+#### libnftnl
+#### libedit
+#### nftables
+
 
 ## 6 设置目标系统
 　　目标系统的软件包制作过程已经完成，接下来就是对目标系统进行必要的设置，以便目标系统可以正常的启动和使用。
