@@ -739,6 +739,37 @@ export PKG_CONFIG_PATH="${SYSDIR}/sysroot/usr/lib32/pkgconfig:${SYSDIR}/sysroot/
 export JOBS="-j8"
 ```
 
+　　接下来的步骤是制作一个为meson命令用来交叉编译配置的文本文件，步骤如下：
+
+```sh
+pushd ${BUILDDIR}
+echo "[binaries]" > meson-cross.txt
+echo "c = '${CROSS_TARGET}-gcc'" >> meson-cross.txt
+echo "cpp = '${CROSS_TARGET}-g++'" >> meson-cross.txt
+echo "ar = '${CROSS_TARGET}-ar'" >> meson-cross.txt
+echo "strip = '${CROSS_TARGET}-strip'" >> meson-cross.txt
+echo "objcopy = '${CROSS_TARGET}-objcopy'" >> meson-cross.txt
+echo "pkgconfig = '${CROSS_TARGET}-pkg-config'" >> meson-cross.txt
+echo "cups-config = '${CROSS_TARGET}-cups-config'" >> meson-cross.txt
+echo "llvm-config = '${CROSS_TARGET}-llvm-config'" >> meson-cross.txt
+echo "vala = '${CROSS_TARGET}-valac'" >> meson-cross.txt
+echo "exe_wrapper = 'qemu-loongarch64'" >> meson-cross.txt
+echo "[properties]" >> meson-cross.txt
+echo "sys_root = '${SYSDIR}/sysroot'" >> meson-cross.txt
+echo "pkg_config_libdir = '${SYSDIR}/sysroot/usr/lib32/pkgconfig:${SYSDIR}/sysroot/usr/share/pkgconfig'" >> meson-cross.txt
+cat >> meson-cross.txt << "EOF"
+[host_machine]
+system = 'linux'
+cpu_family = 'loongarch32'
+cpu = 'loongarch32'
+endian = 'little'
+EOF
+popd
+```
+　　以上步骤完成后将在${BUILDDIR}目录中生成一个meson-cross.txt文件，该文件包含了编译Systemd时目标架构的名字、系统、使用的工具链命令以及编译参数等等，这样在接下来使用meson进行配置的软件包在配置阶段中引用该文件就可以了。
+
+
+
 ### 4.2 软件包的制作
 
 #### Man-Pages
@@ -1299,101 +1330,1553 @@ popd
 
 　　Bash软件在交叉编译时的配置阶段会有大量的参数探测错误，需要我们手工指定这些参数的真实取值，创建一个文本文件，将这些参数的取值写进去，并在configure配置中增加```--cache-file=config.cache```参数（其中config.cache就是保存参数的文本文件名）。
 
+#### Bash-Completion
+　　https://github.com/scop/bash-completion/releases/download/2.16.0/bash-completion-2.16.0.tar.xz
+　　bash-completion软件包是bash的扩展包，可以帮助完善bash使用过程中命令参数的补全。
 
-#### bash-completion
-#### libtool
-#### gdbm
+```sh
+tar xvf ${DOWNLOADDIR}/bash-completion-2.16.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/bash-completion-2.16.0
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+                    --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libtool
+　　https://ftp.gnu.org/gnu/libtool/libtool-2.5.4.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libtool-2.4.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libtool-2.4.7
+        ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+        make ${JOBS}
+        make DESTDIR=${SYSDIR}/sysroot install
+popd
+sed -i -e "s@${SYSDIR}/cross-tools/${CROSS_TARGET}@/usr@g" \
+       -e "s@${SYSDIR}/cross-tools/lib/gcc@/usr/lib32/gcc@g" \
+       -e "s@${SYSDIR}/cross-tools/bin@/usr/bin@g" \
+       -e "s@${SYSDIR}/sysroot/lib@/usr/lib@g" \
+       -e "s@${SYSDIR}/sysroot/usr@/usr@g" \
+       -e "s@${CROSS_TARGET}-@@g" \
+       ${SYSDIR}/sysroot/usr/bin/libtool
+```
+　　交叉编译生成的libtool文件中包含了大量的在交叉编译中使用的路径，因此在目标系统中使用libtool会存在路径不对的问题，我们通过sed命令将这些交叉编译环境中的路径转换成目标系统实际的路径。
+
+#### GDBM
+　　https://ftp.gnu.org/gnu/gdbm/gdbm-1.24.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gdbm-1.23.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gdbm-1.23
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --disable-static --enable-libgdbm-compat
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm ${SYSDIR}/sysroot/usr/lib32/libgdbm*.la
+popd
+```
+
 #### gperf
-#### expat
-#### autoconf
-#### autoconf-archive
-#### automake
-#### kmod
-#### openssl
-#### coreutils
-#### check
-#### diffutils
-#### gawk
-#### findutils
-#### intltool
-#### groff
-#### less
+　　https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gperf-3.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gperf-3.1
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Expat
+　　https://sourceforge.net/projects/expat/files/expat/2.6.4/expat-2.6.4.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/expat-2.6.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/expat-2.6.4
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --without-docbook
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libexpat.la
+popd
+```
+
+#### Autoconf
+　　https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/autoconf-2.72.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/autoconf-2.72
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Autoconf-Archive
+　　https://mirror.truenetwork.ru/gnu/autoconf-archive/autoconf-archive-2024.10.16.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/autoconf-archive-2024.10.16.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/autoconf-archive-2024.10.16
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Automake
+　　https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/automake-1.17.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/automake-1.17
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+　　在交叉编译目录中我们安装了一个Automake软件包，该软件包提供了增加LoongArch支持的探测脚本，有很多软件都会需要用这些脚本来覆盖自己源代码中的脚本。
+
+　　在制作的目标系统中当然也需要改其中的Automake软件包，也使其支持LoongArch，这样将来在目标系统中配置编译一些软件包时就可以使用上。
+
+#### Kmod
+　　https://mirrors.edge.kernel.org/pub/linux/utils/kernel/kmod/kmod-33.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/kmod-33.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/kmod-33
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --libdir=/usr/lib32 --bindir=/bin \
+	            --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	            --with-xz --with-zstd --with-zlib
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+
+	for target in depmod insmod lsmod modinfo modprobe rmmod; do
+		ln -sfv ../bin/kmod ${SYSDIR}/sysroot/sbin/$target
+	done
+	ln -sfv kmod ${SYSDIR}/sysroot/bin/lsmod
+popd
+```
+
+#### Openssl
+　　https://github.com/openssl/openssl/releases/download/openssl-3.4.0/openssl-3.4.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/openssl-3.4.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssl-3.4.0
+	CC="${CROSS_TARGET}-gcc" \
+	./Configure --prefix=/usr --openssldir=/etc/ssl \
+				--libdir=lib32 shared zlib linux-generic32
+	make -j${JOBS} EX_LIBS="-latomic"
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+　　OpenSSL是一个十分重要的安全算法库，通常对不同的架构可以使用汇编对算法进行优化，但其也提供了通用的C实现，因此可以采用```linux-generic32```来指定用通用实现进行编译，当然通用实现的性能是相对较低的，在今后如果有了针对LoongArch32的优化支持则可以修改该参数来达到优化编译的目的。
+
+#### Coreutils
+　　https://ftp.gnu.org/gnu/coreutils/coreutils-9.6.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/coreutils-9.6.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/coreutils-9.6
+	FORCE_UNSAFE_CONFIGURE=1 \
+	./configure --prefix=/usr  --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+				--enable-no-install-program=kill,uptime
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	mv -v ${SYSDIR}/sysroot/usr/bin/chroot ${SYSDIR}/sysroot/usr/sbin
+popd
+```
+
+#### Check
+　　https://github.com/libcheck/check/archive/0.15.2/check-0.15.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/check-0.15.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/check-0.15.2
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Diffutils
+　　https://ftp.gnu.org/gnu/diffutils/diffutils-3.10.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/diffutils-3.10.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/diffutils-3.10
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake -a
+	./configure --prefix=/usr  --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Gawk
+　　https://ftp.gnu.org/gnu/gawk/gawk-5.3.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gawk-5.3.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gawk-5.3.1
+	sed -i 's/extras//' Makefile.in
+	./configure --prefix=/usr  --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Findutils
+　　https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/findutils-4.10.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/findutils-4.10.0
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --localstatedir=/var/lib/locate
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Intltool
+　　https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/intltool-0.51.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/intltool-0.51.0
+    sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/usr/bin/intltool*
+popd
+```
+
+#### Groff
+　　https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/groff-1.23.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/groff-1.23.0
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake --add-missing
+	PAGE=A4 ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make TROFFBIN=troff GROFFBIN=groff GROFF_BIN_PATH= ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Less
+　　https://www.greenwoodsoftware.com/less/less-668.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/less-688.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/less-688
+	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 #### gzip
-#### iproute2
-#### kbd
-#### libpipeline
-#### make
-#### patch
-#### libunistring
-#### libpsl
-#### curl
-#### libidn2
-#### man-db
-#### tar
-#### texinfo
-#### sqlite
-#### util-linux
-#### dbus
-#### e2fsprogs
-#### openssh
-#### wget
-#### make-ca
-#### inetutils
-#### wireless_tools
-#### net-tools
-#### libnl
-#### sudo
-#### icu4c
-#### libgpg-error
-#### libgcrypt
-#### libxml2
-#### libxslt
-#### gpm
-#### libevent
-#### links
-#### doxygen
-#### git
-#### ctags
-#### inih
-#### dosfstools
-#### libaio
-#### pcre
-#### pcre2
-#### vim
-#### unrar
-#### zip
-#### unzip
-#### cpio
-#### libmnl
-#### ethtool
-#### libpng
-#### libjpeg-turbo
-#### tiff
-#### lcms
-#### openjpeg
-#### jasper
+　　https://ftp.gnu.org/gnu/gzip/gzip-1.13.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gzip-1.13.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gzip-1.13
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Iproute2
+　　https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.13.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/iproute2-6.13.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iproute2-6.13.0
+	sed -i /ARPD/d Makefile
+	rm -fv man/man8/arpd.8
+	PKG_CONFIG=${CROSS_TARGET}-pkg-config \
+	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/sysroot/usr/include \
+	     NETNS_RUN_DIR=/run/netns ${JOBS}
+	PKG_CONFIG=${CROSS_TARGET}-pkg-config \
+	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/sysroot/usr/include \
+		 SBINDIR=/usr/sbin DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+　　IPRoute2软件包没有配置阶段，直接在make命令中使用“CC”变量指定交叉编译器，而对于在编译过程中会临时编译一些在本地运行的程序时就需要使用“HOSTCC”变量来指定本地编译器，否则“HOSTCC”会使用“CC”变量的指定编译器，那么编译出来的程序就无法在交叉编译的主系统中运行了。
+
+#### Kbd
+　　https://mirrors.edge.kernel.org/pub/linux/utils/kbd/kbd-2.7.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/kbd-2.7.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/kbd-2.7.1
+	patch -Np1 -i ${DOWNLOADDIR}/0001-Save-font-support-UTF-8.patch
+	sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure
+	sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+	autoreconf -ifv
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} --disable-vlock
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+　　交叉编译KBD时可能会缺少链接库而导致制作失败，此时可以通过LIBS变量指定缺少链接的库而完成KBD软件包的制作。
+
+#### Libpipeline
+　　https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.8.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libpipeline-1.5.8.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpipeline-1.5.8
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Make
+　　https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
+
+```sh
+pushd ${BUILDDIR}/make-4.4.1
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Patch
+　　https://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/patch-2.7.6.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/patch-2.7.6
+	./configure --prefix=/usr -build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libunistring
+　　https://ftp.gnu.org/gnu/libunistring/libunistring-1.3.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libunistring-1.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libunistring-1.3
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libunistring.la
+popd
+```
+
+#### Libpsl
+　　https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libpsl-0.21.5.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpsl-0.21.5
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libpsl.la
+popd
+```
+
+#### Curl
+　　https://curl.se/download/curl-8.11.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/curl-8.11.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/curl-8.11.1
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+                --host=${CROSS_TARGET} --with-openssl \
+                --enable-threaded-resolver --with-ca-path=/etc/ssl/certs
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	cp ${SYSDIR}/sysroot/usr/bin/curl-config ${SYSDIR}/cross-tools/bin/
+popd
+```
+
+#### Libidn2
+　　https://ftp.gnu.org/gnu/libidn/libidn2-2.3.7.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libidn2-2.3.7.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libidn2-2.3.7
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libidn2.la
+popd
+```
+
+#### Man-DB
+　　https://download.savannah.gnu.org/releases/man-db/man-db-2.13.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/man-db-2.13.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/man-db-2.13.0
+	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --sysconfdir=/etc --disable-setuid \
+	            --enable-cache-owner=bin 	--with-browser=/usr/bin/lynx \
+	            --with-vgrind=/usr/bin/vgrind --with-grap=/usr/bin/grap
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Tar
+　　https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/tar-1.35.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/tar-1.35
+	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Texinfo
+　　https://ftp.gnu.org/gnu/texinfo/texinfo-7.2.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/texinfo-7.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/texinfo-7.2
+sed -e 's/__attribute_nonnull__/__nonnull/' \
+    -i gnulib/lib/malloc/dynarray-skeleton.c
+	for i in $(dirname $(find -name "config.sub"))
+	do
+		rm ./$i/config.{sub,guess}
+		pushd $(dirname ./$i)
+			automake --add-missing
+		popd
+	done
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR}/sysroot TEXMF=/usr/share/texmf install-tex
+popd
+```
+
+#### SQLite
+　　https://github.com/sqlite/sqlite/archive/version-3.48.0/sqlite-3.48.0.tar.gz
+
+```sh
+unzip ${DOWNLOADDIR}/sqlite-3.48.0.tar.gz -d ${BUILDDIR}
+pushd ${BUILDDIR}/sqlite-3.48.0
+	cp ${SYSDIR}/cross-tools/share/automake-*/config.* ./
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-fts5 \
+		CPPFLAGS="-DSQLITE_ENABLE_FTS3=1 \
+                          -DSQLITE_ENABLE_FTS4=1 \
+                          -DSQLITE_ENABLE_COLUMN_METADATA=1 \
+                          -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 \
+                          -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+                          -DSQLITE_SECURE_DELETE=1 \
+                          -DSQLITE_ENABLE_FTS3_TOKENIZER=1"
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libsqlite3*.la
+popd
+```
+
+#### Util-Linux
+　　https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.4.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/util-linux-2.40.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/util-linux-2.40.4
+	cp ${SYSDIR}/sysroot/usr/share/automake-1.16/config.* config/
+	./configure  --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+        ADJTIME_PATH=/var/lib/hwclock/adjtime \
+        --libdir=/usr/lib32 \
+        --disable-chfn-chsh --disable-login --disable-nologin \
+        --disable-su --disable-setpriv --disable-runuser \
+        --disable-pylibmount --disable-static --without-python \
+        --without-systemd --disable-makeinstall-chown \
+	--with-bashcompletiondir=/usr/share/bash-completion/completions \
+	--with-tmpfilesdir=/usr/lib/tmpfiles.d --disable-asciidoc \
+        runstatedir=/run
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/lib{blkid,fdisk,mount,smartcols,uuid}.la
+popd
+```
+
+　　Util-Linux带有大量的命令和库，由于部分命令已经在其它软件包中提供了，所以使用选项参数来关闭这些命令的编译和安装。
+
+#### DBus
+　　https://dbus.freedesktop.org/releases/dbus/dbus-1.16.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/dbus-1.16.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dbus-1.16.0
+	mkdir -p build
+	pushd build
+		meson --prefix=/usr --libdir=/usr/lib32 --sysconfdir=/etc --localstatedir=/var \
+		      -Dbuildtype=release --cross-file ${BUILDDIR}/meson-cross.txt \
+		      -Dsystemd_system_unitdir=/usr/lib/systemd/system -Dsystemd_user_unitdir=/usr/lib/systemd/user \
+                      ..
+	ninja
+	DESTDIR=${SYSDIR}/sysroot ninja install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libdbus-1.la
+	ln -sfv /etc/machine-id ${SYSDIR}/sysroot/var/lib/dbus
+popd
+```
+	DBus软件包使用meson作为配置阶段的工具，我们使用准备好的meson-cross.txt作为交叉编译的配置文件进行配置。
+
+#### E2fsprogs
+　　https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v1.47.2/e2fsprogs-1.47.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/e2fsprogs-1.47.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/e2fsprogs-1.47.2
+	mkdir -v build
+	pushd build
+		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		             --host=${CROSS_TARGET} --sysconfdir=/etc \
+		             --enable-elf-shlibs --disable-libblkid \
+		             --disable-libuuid --disable-uuidd --disable-fsck
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+		rm -fv ${SYSDIR}/sysroot/usr/lib32/{libcom_err,libe2p,libext2fs,libss}.la
+	popd
+popd
+cp -av ${SYSDIR}/sysroot/usr/bin/mk_cmds ${SYSDIR}/cross-tools/bin/
+sed -i "s@=/usr@=${SYSDIR}/sysroot/usr@g" ${SYSDIR}/cross-tools/bin/mk_cmds
+```
+
+#### OpenSSH
+　　https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.9p1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/openssh-9.9p1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssh-9.9p1
+	rm config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr  --libdir=/usr/lib32 --sysconfdir=/etc/ssh \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	            --disable-strip --with-md5-passwords \
+	            --with-privsep-path=/var/lib/sshd \
+	            --with-default-path=/usr/bin \
+	            --with-superuser-path=/usr/sbin:/usr/bin \
+	            --with-pid-dir=/run
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install-nokeys host-key
+	install -v -m755 contrib/ssh-copy-id ${SYSDIR}/sysroot/usr/bin
+popd
+```
+
+#### WGet
+　　https://ftp.gnu.org/gnu/wget/wget-1.25.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/wget-1.25.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/wget-1.25.0
+	rm build-aux/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --sysconfdir=/etc \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	            --with-ssl=openssl
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Make-CA
+　　https://github.com/lfs-book/make-ca/archive/v1.14/make-ca-1.14.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/make-ca-1.14.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/make-ca-1.14
+        make DESTDIR=${SYSDIR}/sysroot install
+        install -vdm755 ${SYSDIR}/sysroot/etc/ssl/local
+        cp ${SYSDIR}/sysroot/usr/sbin/make-ca ${SYSDIR}/cross-tools/bin/
+        sed -i "/MAKE_CA_CONF/s@\"/etc@\"${SYSDIR}/sysroot/etc@g" ${SYSDIR}/cross-tools/bin/make-ca
+        cp ${DOWNLOADDIR}/certdata.txt ./
+        cp ${DOWNLOADDIR}/root.crt ./
+        cp ${DOWNLOADDIR}/class3.crt ./
+        ${SYSDIR}/cross-tools/bin/make-ca --destdir ${SYSDIR}/sysroot -C certdata.txt
+        openssl x509 -in root.crt -text -fingerprint -setalias "CAcert Class 1 root" \
+                -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
+                > ${SYSDIR}/sysroot/etc/ssl/local/CAcert_Class_1_root.pem
+        openssl x509 -in class3.crt -text -fingerprint -setalias "CAcert Class 3 root" \
+                -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
+                > ${SYSDIR}/sysroot/etc/ssl/local/CAcert_Class_3_root.pem
+        ${SYSDIR}/cross-tools/bin/make-ca --destdir ${SYSDIR}/sysroot -r
+popd
+rm -rf ${BUILDDIR}/make-ca-1.14
+
+mkdir -pv ${SYSDIR}/sysroot/etc/profile.d &&
+cat > ${SYSDIR}/sysroot/etc/profile.d/pythoncerts.sh << "EOF"
+## Begin /etc/profile.d/pythoncerts.sh
+
+export _PIP_STANDALONE_CERT=/etc/pki/tls/certs/ca-bundle.crt
+
+## End /etc/profile.d/pythoncerts.sh
+EOF
+```
+
+#### Inetutils
+　　https://ftp.gnu.org/gnu/inetutils/inetutils-2.5.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/inetutils-2.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/inetutils-2.5
+	sed -i "/PATH_PROCNET_DEV/s@no@/proc/net/dev@g" paths
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	            --disable-logger --disable-whois --disable-rcp \
+	            --disable-rexec --disable-rlogin --disable-rsh \
+	            --disable-servers
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	mv -v ${SYSDIR}/sysroot/usr/{,s}bin/ifconfig
+	chmod -v +x ${SYSDIR}/sysroot/usr/bin/{ping{,6},traceroute}
+popd
+```
+
+#### Wireless_Tools
+　　https://hewlettpackard.github.io/wireless-tools/wireless_tools.29.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/wireless_tools.29.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/wireless_tools.29
+	patch -Np1 -i ${DOWNLOADDIR}/wireless_tools-29-fix_iwlist_scanning-1.patch
+	sed  -i.orig "/^INSTALL_LIB/s@/lib/@/lib32/@g" Makefile
+	make CC=${CROSS_TARGET}-gcc ${JOBS}
+	make PREFIX=${SYSDIR}/sysroot/usr INSTALL_MAN=${SYSDIR}/sysroot/usr/share/man install
+popd
+```
+
+#### Net-Tools
+　　https://sourceforge.net/projects/net-tools/files//net-tools-2.10.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/net-tools-2.10.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/net-tools-2.10
+	yes "" | make BINDIR='/usr/bin' SBINDIR='/usr/bin' CC=${CROSS_TARGET}-gcc
+	make BINDIR='/usr/bin' SBINDIR='/usr/bin' CC=${CROSS_TARGET}-gcc DESTDIR=${PWD}/dest install
+	rm -v dest/usr/bin/{nis,yp}domainname
+	rm -v dest/usr/bin/{hostname,dnsdomainname,domainname,ifconfig}
+	rm -rv dest/usr/share/man/man1
+	rm -rv dest/usr/share/man/man8/ifconfig.8
+	cp -av dest/usr/bin/* ${SYSDIR}/sysroot/usr/bin/
+	cp -av dest/usr/share/man/man* ${SYSDIR}/sysroot/usr/share/man/
+popd
+```
+
+#### Libnl
+　　https://github.com/thom311/libnl/releases/download/libnl3_11_0/libnl-3.11.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libnl-3.11.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnl-3.11.0
+	rm build-aux/config.{sub,guess}
+	automake --add-missing
+	./configure --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib32 \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Sudo
+　　https://www.sudo.ws/dist/sudo-1.9.16.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/sudo-1.9.16.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/sudo-1.9.16
+	./configure --prefix=/usr --libexecdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--with-secure-path --with-all-insults --with-env-editor \
+		--with-passprompt="[sudo] password for %p: "
+	sed -i "/^install_uid/s@= 0@= $(id -u)@g" Makefile
+	sed -i "/^install_gid/s@= 0@= $(id -u)@g" Makefile
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+sed -i "/wheel ALL=(ALL:ALL) ALL/s@# @@g" ${SYSDIR}/sysroot/etc/sudoers.dist
+```
+
+
+#### ICU4C
+　　https://github.com/unicode-org/icu/releases/download/release-76-1/icu4c-76_1-src.tgz
+
+```sh
+tar xvf ${DOWNLOADDIR}/icu4c-76_1-src.tgz -C ${BUILDDIR}
+pushd ${BUILDDIR}/icu/source
+	touch config/icucross.mk
+	touch config/icucross.inc
+	sed -i '/^PKGDATA/s@$(TOOLBINDIR)@/bin@g' data/Makefile.in
+	sed -i '/INVOKE/s@$(TOOLBINDIR)@/bin@g' data/Makefile.in extra/uconv/Makefile.in
+	sed -i '/INVOKE/s@/bin/icupkg@/sbin/icupkg@g' data/Makefile.in
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET} --with-cross-build=${PWD}
+	sed -i '/INVOKE/s@$(TOOLBINDIR)@/bin@g' data/rules.mk
+	sed -i '/INVOKE/s@/bin/icupkg@/sbin/icupkg@g' data/rules.mk
+	sed -i '/INVOKE/s@/bin/gensprep@/sbin/gensprep@g' data/rules.mk
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libgpg-error
+　　https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.51.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libgpg-error-1.51.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libgpg-error-1.51
+	cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* build-aux/
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libgpg-error*.la
+popd
+```
+
+#### Libgcrypt
+　　https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.11.0.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libgcrypt-1.11.0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libgcrypt-1.11.0
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libgcrypt*.la
+	cp -av ${SYSDIR}/sysroot/bin/libgcrypt-config ${SYSDIR}/cross-tools/bin/
+popd
+```
+
+
+#### Libxml2
+　　https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.5.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libxml2-2.13.5.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxml2-2.13.5
+	mkdir cross-build
+	pushd cross-build
+		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+			--host=${CROSS_TARGET} --with-history --with-icu \
+			--with-http --with-python=no
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+		rm ${SYSDIR}/sysroot/usr/lib32/libxml2.la
+	popd
+popd
+```
+
+#### Libxslt
+　　https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.42.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libxslt-1.1.42.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxslt-1.1.42
+	rm config.{sub,guess}
+	automake -a
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET} --without-python
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### GPM
+　　https://github.com/telmich/gpm/archive/1.20.7/gpm-1.20.7.tar.gz
+　　GPM软件包提供了在文本环境下使用鼠标的工具。
+
+```sh
+tar xvf ${DOWNLOADDIR}/gpm-1.20.7.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gpm-1.20.7
+	patch -Np1 -i ${DOWNLOADDIR}/gpm-1.20.7-consolidated-1.patch
+	patch -Np1 -i ${DOWNLOADDIR}/gpm-1.20.1-weak-wgetch.patch
+	./autogen.sh
+	./configure --prefix=/usr --libdir=/usr/lib32 --sysconfdir=/etc \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	ln -sfv libgpm.so.2.1.0 ${SYSDIR}/sysroot/usr/lib32/libgpm.so
+popd
+
+cat > ${SYSDIR}/sysroot/etc/sysconfig/mouse << "EOF"
+MDEVICE="/dev/input/mice"
+PROTOCOL="imps2"
+GPMOPTS=""
+EOF
+
+cat > ${SYSDIR}/sysroot/usr/lib/systemd/system/gpm.service << "EOF"
+[Unit]
+Description=Console Mouse manager
+
+[Service]
+ExecStart=/usr/sbin/gpm -m /dev/input/mice -t exps2
+Type=forking
+PIDFile=/run/gpm.pid
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+#### Libevent
+　　https://github.com/libevent/libevent/archive/release-2.1.12-stable/libevent-release-2.1.12-stable.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libevent-2.1.12-stable.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libevent-2.1.12-stable
+	rm build-aux/config.{guess,sub}
+	automake -a
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Links
+　　http://links.twibright.com/download/links-2.30.tar.bz2
+　　Links是一个文本环境下简易的互联网浏览器。
+
+```sh
+tar xvf ${DOWNLOADDIR}/links-2.30.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/links-2.30
+	CC="${CROSS_TARGET}-gcc" \
+	./configure --prefix=/usr --libdir=/usr/lib32 --mandir=/usr/share/man \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Doxygen
+　　https://www.doxygen.nl/files/doxygen-1.13.2.src.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/doxygen-1.13.2.src.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/doxygen-1.13.2
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
+		      -DCMAKE_INSTALL_PREFIX=/usr -Wno-dev ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+	popd
+popd
+```
+
+#### Git
+　　https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.48.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/git-2.48.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/git-2.48.1
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--with-gitconfig=/etc/gitconfig --with-python=python3 --without-iconv \
+		ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=no
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot perllibdir=/usr/lib/perl5/5.3x/site_perl install
+popd
+```
+
+#### Ctags
+　　https://sourceforge.net/projects/ctags/files/ctags//5.8//ctags-5.8.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/ctags-5.8.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/ctags-5.8
+	patch -Np1 -i ${DOWNLOADDIR}/ctags-5.8-fix_form_fedora.patch
+	patch -Np1 -i ${DOWNLOADDIR}/ctags-5.8-for-gcc_12.patch
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Inih
+　　https://github.com/benhoyt/inih/archive/r58/inih-r58.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/inih-r58.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/inih-r58
+	mkdir build
+	pushd build
+		meson --prefix=/usr --libdir=/usr/lib32 \
+		      --buildtype=release --cross-file=${BUILDDIR}/meson-cross.txt ..
+		ninja
+		DESTDIR=${SYSDIR}/sysroot ninja install
+	popd
+popd
+```
+
+#### Dosfstools
+　　https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/dosfstools-4.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dosfstools-4.2
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-compat-symlinks --mandir=/usr/share/man
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libaio
+　　https://ftp.debian.org/debian/pool/main/liba/libaio/libaio_0.3.113.orig.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libaio_0.3.113.orig.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libaio-0.3.113
+	make CC="${CROSS_TARGET}-gcc" ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot libdir=/usr/lib32 install
+popd
+```
+
+#### PCRE
+　　https://sourceforge.net/projects/pcre/files/pcre//8.45//pcre-8.45.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/pcre-8.45.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/pcre-8.45
+	rm config.{sub,guess}
+	automake -a
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET} --enable-unicode-properties \
+		--enable-pcre16 --enable-pcre32 \
+		--enable-pcregrep-libz --enable-pcregrep-libbz2 \
+		--enable-pcretest-libreadline
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### PCRE2
+　　https://github.com/PCRE2Project/pcre2/archive/pcre2-10.44/pcre2-10.44.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pcre2-10.42.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/pcre2-10.42
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET} --enable-unicode --enable-jit \
+		--enable-pcre2-16 --enable-pcre2-32 --enable-pcre2grep-libz \
+		--enable-pcre2grep-libbz2 --enable-pcre2test-libreadline
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### VIM
+　　https://github.com/vim/vim/archive/v9.1.1071/vim-9.1.1071.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/vim-9.1.1071.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vim-9.1.1071
+	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+cat > src/auto/config.cache << EOF
+	vim_cv_getcwd_broken=no
+	vim_cv_toupper_broken=no
+	vim_cv_terminfo=yes
+	vim_cv_tgetent=zero
+	vim_cv_stat_ignores_slash=no
+	vim_cv_memmove_handles_overlap=yes
+	ac_cv_small_wchar_t=no
+EOF
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}  --with-tlib=ncurses
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot STRIP=${CROSS_TARGET}-strip install
+	ln -sv vim ${SYSDIR}/sysroot/usr/bin/vi
+popd
+```
+
+　　VIM制作过程中也需要设置一些参数避免自动探测错误，但VIM的参数设置文件是有默认文件路径的即“src/auto/config.cache”，在文件中写入参数和取值即可，configure配置脚本会自动从该文件中读取。
+
+　　在安装完VIM后，我们可以配置VIM的默认设置文件，设置步骤如下：
+
+```sh
+cat > ${SYSDIR}/sysroot/etc/vimrc << "EOF"
+let skip_defaults_vim=1
+set nocompatible
+set backspace=2
+set mouse=
+
+if (&term == "xterm") || (&term == "putty")
+  set background=dark
+endif
+EOF
+```
+　　改设置内容主要是设置了一些基本的界面和操作特性，如Tab转换成几个空格显示，不同的终端下背景颜色等等。
+
+#### UnRAR
+　　https://www.rarlab.com/rar/unrarsrc-7.1.3.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/unrarsrc-7.1.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/unrar
+	make CXX="${CROSS_TARGET}-g++" STRIP=${CROSS_TARGET}-strip -f makefile ${JOBS}
+	install -v -m755 unrar ${SYSDIR}/sysroot/usr/bin
+popd
+```
+
+#### Zip
+　　https://sourceforge.net/projects/infozip/files/Zip%203.x%20%28latest%29/3.0/zip30.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/zip30.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/zip30
+	make -f unix/Makefile CC="${CROSS_TARGET}-gcc -DLARGE_FILE_SUPPORT" generic ${JOBS}
+	make prefix=${SYSDIR}/sysroot/usr MANDIR=${SYSDIR}/sysroot/usr/share/man/man1 \
+	     -f unix/Makefile install
+popd
+```
+
+#### UnZip
+　　https://sourceforge.net/projects/infozip/files/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/unzip60.tgz -C ${BUILDDIR}
+pushd ${BUILDDIR}/unzip60
+	sed -i "s@-DNO_LCHMOD@@g" unix/configure
+	make -f unix/Makefile CC="${CROSS_TARGET}-gcc \
+	     -DLARGE_FILE_SUPPORT -DUNICODE_WCHAR -DUNICODE_SUPPORT" generic ${JOBS}
+	make prefix=${SYSDIR}/sysroot/usr MANDIR=${SYSDIR}/sysroot/usr/share/man/man1 \
+	      -f unix/Makefile install
+popd
+```
+
+#### CPIO
+　　https://ftp.gnu.org/gnu/cpio/cpio-2.15.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/cpio-2.15.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/cpio-2.15
+	sed -i '/The name/,+2 d' src/global.c
+	./configure --prefix=/usr --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET} --enable-mt \
+		--with-rmt=/usr/libexec/rmt
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libmnl
+　　https://netfilter.org/projects/libmnl/files/libmnl-1.0.5.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libmnl-1.0.5.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libmnl-1.0.5
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+		--host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Ethtool
+　　https://mirrors.edge.kernel.org/pub/software/network/ethtool/ethtool-6.11.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/ethtool-6.11.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/ethtool-6.11
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libpng
+　　https://sourceforge.net/projects/libpng/files/libpng16/1.6.46/libpng-1.6.46.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libpng-1.6.46.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpng-1.6.46
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libpng16.la
+popd
+```
+
+#### LibJPEG-Turbo
+　　https://sourceforge.net/projects/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libjpeg-turbo-3.0.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libjpeg-turbo-3.0.1
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -DCMAKE_INSTALL_PREFIX=/usr \
+		      -DCMAKE_BUILD_TYPE=RELEASE -DWITH_JPEG8=ON \
+		      -DCMAKE_INSTALL_DEFAULT_LIBDIR=lib32 ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+	popd
+popd
+```
+
+#### TIFF
+　　https://download.osgeo.org/libtiff/tiff-4.7.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/tiff-4.7.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/tiff-4.7.0
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -DCMAKE_INSTALL_PREFIX=/usr \
+		      -DCMAKE_BUILD_TYPE=RELEASE \
+		      -DCMAKE_INSTALL_LIBDIR=lib32 ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+		sed -i /Version/s/\$/$(cat ../VERSION)/ \
+		       ${SYSDIR}/sysroot/usr/lib32/pkgconfig/libtiff-4.pc
+	popd
+popd
+```
+
+#### LCMS2
+　　https://sourceforge.net/projects/lcms/files/lcms/2.16/lcms2-2.16.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/lcms2-2.16.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/lcms2-2.16
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### OpenJPEG
+　　https://github.com/uclouvain/openjpeg/archive/v2.5.3/openjpeg-2.5.3.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/openjpeg-2.5.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openjpeg-2.5.3
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -DCMAKE_INSTALL_PREFIX=/usr \
+		      -DCMAKE_BUILD_TYPE=RELEASE \
+		      -DOPENJPEG_INSTALL_LIB_DIR=lib32 ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+	popd
+popd
+```
+
+#### Jasper
+　　https://github.com/jasper-software/jasper/archive/version-4.2.4/jasper-4.2.4.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/jasper-4.2.4.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/jasper-4.2.4
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -DCMAKE_INSTALL_PREFIX=/usr \
+		      -DCMAKE_BUILD_TYPE=Release \
+		      -DCMAKE_SKIP_INSTALL_RPATH=YES \
+		      -DJAS_CROSSCOMPILING=True -DJAS_STDC_VERSION=201710L \
+		      -DJAS_ENABLE_DOC=NO ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+	popd
+popd
+```
+
 #### LibRaw
-#### libmng
-#### freetype
-#### graphite
-#### brotli
-#### freetype
-#### fontconfig
-#### fribidi
-#### nettle
-#### gc
-#### libtasn1
-#### dhcp
-#### busybox
-#### libksba
-#### npth
-#### libassuan
-#### hwdata
-#### dejavu-fonts-ttf
-#### lzo
-#### libnftnl
-#### libedit
-#### nftables
+　　https://www.libraw.org/data/LibRaw-0.21.3.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/LibRaw-0.21.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/LibRaw-0.21.3
+	autoreconf -ifv
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-jpeg --enable-jasper --enable-lcms
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libmng
+　　https://sourceforge.net/projects/libmng/files/libmng-devel/2.0.3/libmng-2.0.3.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libmng-2.0.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libmng-2.0.3
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### FreeType
+　　https://sourceforge.net/projects/freetype/files/freetype2/2.13.3/freetype-2.13.3.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/freetype-2.13.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/freetype-2.13.3
+	sed -ri "s:.*(AUX_MODULES.*valid):\1:" modules.cfg
+	sed -r "s:.*(#.*SUBPIXEL_RENDERING) .*:\1:" \
+	    -i include/freetype/config/ftoption.h
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-freetype-config
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+sed -i -e "s@${SYSDIR}/cross-tools/bin@/usr/bin@g" \
+       -e "s@${CROSS_TARGET}-@@g" \
+       ${SYSDIR}/sysroot/usr/bin/freetype-config
+```
+
+#### Graphite
+　　https://github.com/silnrsi/graphite/archive/1.3.14/graphite-1.3.14.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/graphite-1.3.14.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/graphite-1.3.14
+	sed -i "/mfpmath/d" src/CMakeLists.txt
+	mkdir build
+	pushd build
+		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+		cmake -DCMAKE_INSTALL_PREFIX=/usr -DLIB_SUFFIX=32 \
+		      -DCMAKE_BUILD_TYPE=Release ..
+		make ${JOBS}
+		make DESTDIR=${SYSDIR}/sysroot install
+    popd
+popd
+```
+
+#### Brotli
+　　https://github.com/google/brotli/archive/v1.1.0/brotli-1.1.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/brotli-1.1.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/brotli-1.1.0
+	./bootstrap
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libbrotli*.la
+popd
+```
+
+#### FreeType(第二次)
+　　这次编译是加入对HarfBuzz的支持。
+
+```sh
+tar xvf ${DOWNLOADDIR}/freetype-2.13.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/freetype-2.13.3
+	sed -ri "s:.*(AUX_MODULES.*valid):\1:" modules.cfg
+	sed -r "s:.*(#.*SUBPIXEL_RENDERING) .*:\1:" \
+	    -i include/freetype/config/ftoption.h
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-freetype-config
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libfreetype.la
+popd
+```
+
+#### Fontconfig
+　　https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.16.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/fontconfig-2.16.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/fontconfig-2.16.0
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--sysconfdir=/etc --localstatedir=/var --disable-docs
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libfontconfig.la
+popd
+```
+
+#### Fribidi
+　　https://github.com/fribidi/fribidi/archive/v1.0.16/fribidi-1.0.16.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/fribidi-1.0.16.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/fribidi-1.0.16
+	mkdir build
+	pushd build
+		meson --prefix=/usr --libdir=/usr/lib32 \
+		      --buildtype=release \
+		      --cross-file=${BUILDDIR}/meson-cross.txt ..
+		ninja
+		DESTDIR=${SYSDIR}/sysroot ninja install
+	popd
+popd
+```
+
+#### Nettle
+　　https://ftp.gnu.org/gnu/nettle/nettle-3.10.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/nettle-3.10.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nettle-3.10.1
+	cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* ./
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### GC
+　　https://www.hboehm.info/gc/gc_source/gc-8.2.8.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gc-8.2.8.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gc-8.2.8
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		--enable-cplusplus --with-libatomic-ops=none
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libgc*.la
+popd
+```
+
+#### Libtasn1
+　　https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.19.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libtasn1-4.19.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libtasn1-4.19.0
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libtasn1.la
+popd
+```
+
+#### DHCP
+　　https://ftp.isc.org/isc/dhcp/4.4.3-P1/dhcp-4.4.3-P1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/dhcp-4.4.3-P1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dhcp-4.4.3-P1
+        CFLAGS="${CFLAGS:--g -O2} -Wall -fno-strict-aliasing -Wno-incompatible-pointer-types -std=gnu11 \
+        -D_PATH_DHCLIENT_SCRIPT='\"/usr/sbin/dhclient-script\"' \
+        -D_PATH_DHCPD_CONF='\"/etc/dhcp/dhcpd.conf\"' \
+        -D_PATH_DHCLIENT_CONF='\"/etc/dhcp/dhclient.conf\"'" \
+        ./configure --prefix=/usr --host=${CROSS_TARGET} \
+            --sysconfdir=/etc/dhcp --localstatedir=/var \
+            --with-randomdev=no \
+            --with-srv-lease-file=/var/lib/dhcpd/dhcpd.leases       \
+            --with-srv6-lease-file=/var/lib/dhcpd/dhcpd6.leases     \
+            --with-cli-lease-file=/var/lib/dhclient/dhclient.leases \
+            --with-cli6-lease-file=/var/lib/dhclient/dhclient6.leases
+        make -j${JOBS} BUILD_CC=gcc LIBS="-latomic"
+        make -C client DESTDIR=${SYSDIR}/sysroot install
+        install -v -m755 client/scripts/linux ${SYSDIR}/sysroot/usr/sbin/dhclient-script
+
+install -vdm755 ${SYSDIR}/sysroot/etc/dhcp &&
+cat > ${SYSDIR}/sysroot/etc/dhcp/dhclient.conf << "EOF"
+ # Begin /etc/dhcp/dhclient.conf
+ #
+ # Basic dhclient.conf(5)
+
+ # prepend domain-name-servers 127.0.0.1;
+request subnet-mask, broadcast-address, time-offset, routers,
+        domain-name, domain-name-servers, domain-search, host-name,
+        netbios-name-servers, netbios-scope, interface-mtu,
+        ntp-servers;
+require subnet-mask, domain-name-servers;
+ # timeout 60;
+ # retry 60;
+ # reboot 10;
+ # select-timeout 5;
+ # initial-interval 2;
+
+EOF
+
+install -v -dm 755 ${SYSDIR}/sysroot/var/lib/dhclient
+popd
+```
+
+#### BusyBox
+　　https://busybox.net/downloads/busybox-1.37.0.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/busybox-1.37.0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/busybox-1.37.0
+	make mrproper
+	make defconfig
+	sed -i "/^# CONFIG_STATIC=/d" .config
+	echo "CONFIG_STATIC=y" >> .config
+	sed -i "/CONFIG_TC=y/s@=y@=n@g" .config
+	make -j${JOBS} CROSS_COMPILE=${CROSS_TARGET}-
+	cp -v busybox ${SYSDIR}/sysroot/usr/bin/
+popd
+```
+
+#### Libksba
+　　https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.6.7.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libksba-1.6.7.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libksba-1.6.7
+         ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET}
+        CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+        make DESTDIR=${SYSDIR}/sysroot install
+        rm -f ${SYSDIR}/sysroot/usr/lib32/*.la
+popd
+```
+
+#### Npth
+　　https://gnupg.org/ftp/gcrypt/npth/npth-1.8.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/npth-1.8.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/npth-1.8
+        ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	        --enable-install-npth-config --enable-malloc0returnsnull
+        CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+        make DESTDIR=${SYSDIR}/sysroot install
+        rm -f ${SYSDIR}/sysroot/usr/lib64/*.la
+        cp -a ${SYSDIR}/sysroot/usr/bin/npth-config ${SYSDIR}/cross-tools/bin/
+        sed -i "/^prefix/s@=\/usr@=${SYSDIR}\/sysroot\/usr@g" ${SYSDIR}/cross-tools/bin/npth-config
+        sed -i "/^libs/s@-L\/usr@-L${SYSDIR}\/sysroot\/usr@g" ${SYSDIR}/cross-tools/bin/npth-config
+popd
+
+```
+
+#### Libassuan
+　　https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-3.0.1.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libassuan-3.0.1.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libassuan-3.0.1
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### HWData
+　　https://github.com/vcrhonek/hwdata/archive/v0.391/hwdata-0.391.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/hwdata-0.391.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/hwdata-0.391
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+
+```
+
+#### Dejavu-Fonts
+　　https://sourceforge.net/projects/dejavu/files/dejavu//2.37//dejavu-fonts-ttf-2.37.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/dejavu-fonts-ttf-2.37.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/dejavu-fonts-ttf-2.37
+	cp fontconfig/*.conf ${SYSDIR}/sysroot/usr/share/fontconfig/conf.avail/
+	install -dv ${SYSDIR}/sysroot/usr/share/fonts/DejaVu/
+	cp -v ttf/* ${SYSDIR}/sysroot/usr/share/fonts/DejaVu/
+popd
+```
+
+#### LZO
+　　http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/lzo-2.10.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/lzo-2.10
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libnftnl
+　　https://www.netfilter.org/pub/libnftnl/libnftnl-1.2.8.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libnftnl-1.2.8.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnftnl-1.2.8
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Libedit
+　　https://www.thrysoee.dk/editline/libedit-20250104-3.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libedit-20250104-3.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libedit-20250104-3.1
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                    --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+
+```
+#### Nftables
+　　https://www.netfilter.org/pub/nftables/nftables-1.1.1.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/nftables-1.1.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nftables-1.1.1
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+		--build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+
+```
 
 
 ## 6 设置目标系统
