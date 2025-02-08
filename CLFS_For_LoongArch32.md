@@ -513,36 +513,7 @@ pushd ${BUILDDIR}/libtool-2.5.4
 popd
 ```
 
-### 3.15 Pkg-Config
-　　https://distfiles.dereferenced.org/pkgconf/pkgconf-2.3.0.tar.xz
-
-　　为了能在交叉编译目标系统的过程中使用目标系统中已经安装的“pc”文件，我们在交叉工具链的目录中安装一个专门用来从目标系统目录中的查询“pc”文件的pkg-config命令，制作过程如下：
-
-```sh
-tar xvf ${DOWNLOADDIR}/pkgconf-2.3.0.tar.xz -C ${BUILDDIR}/
-pushd ${BUILDDIR}/pkgconf-2.3.0
-        ./configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} \
-                --host=${CROSS_HOST} --target=${CROSS_TARGET}
-	make ${JOBS}
-	make install
-        ln -sf pkgconf ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-pkg-config
-popd
-```
-
-### 3.16 Groff
-	https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
-	编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
-
-```sh
-tar xvf ${DOWNLOADDIR}/groff-1.23.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/groff-1.23.0
-	PAGE=A4 ./configure --prefix=${SYSDIR}/cross-tools
-	make ${JOBS}
-	make install
-popd
-```
-
-### 3.17 Perl
+### 3.15 Perl
 	https://www.cpan.org/src/5.0/perl-5.38.0.tar.xz
 	为了配合目标系统中编译Perl相关的软件包时能使用正确的路径，因此我们需要在交叉工具链中安装一个目标系统相同版本的Perl软件包。
 
@@ -562,7 +533,7 @@ pushd ${BUILDDIR}/perl-5.38.0
 popd
 ```
 
-### 3.18 XML-Parser
+### 3.16 XML-Parser
 	https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
 	给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
 
@@ -575,7 +546,7 @@ pushd ${BUILDDIR}/XML-Parser-2.47
 popd
 ```
 
-### 3.19 URI
+### 3.17 URI
 	https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
 	给交叉工具链中的Perl提供URI软件包提供的Perl组件。
 
@@ -588,7 +559,7 @@ pushd ${BUILDDIR}/URI-5.31
 popd
 ```
 
-### 3.20 Python3
+### 3.18 Python3
 	https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
 
 ```sh
@@ -612,7 +583,7 @@ pushd ${BUILDDIR}/Python-3.13.1
 popd
 ```
 
-### 3.21 Setuptools
+### 3.19 Setuptools
 	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
 	Setuptools软件包是Python的基础软件包之一。
 
@@ -623,7 +594,7 @@ popd
 	编译Setuptools软件包建议使用pip命令，但因为当前使用pip命令编译存在依赖问题，所以本次编译Setuptools软件包直接使用python命令运行setup.py脚本进行编译和安装。
 
 
-### 3.22 Pip
+### 3.20 Pip
 	https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
 	pip软件包是Python的基础软件包之一。
 ```sh
@@ -631,7 +602,7 @@ popd
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
 ```
 
-### 3.23 Flit-Core
+### 3.21 Flit-Core
 	https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
 
 ```sh
@@ -639,7 +610,7 @@ popd
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user flit-core 
 ```
 
-### 3.24 Wheel
+### 3.22 Wheel
 	https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
 	Wheel软件包是Python的基础软件包之一。
 ```sh
@@ -648,13 +619,31 @@ popd
 
 ```
 
-### 3.25 Setuptools
+### 3.23 Setuptools
 	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
 	依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 ```sh
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 ```
+
+### 3.24 MarkupSafe
+	https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-3.0.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/markupsafe-3.0.2.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/markupsafe-3.0.2
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user MarkupSafe
+popd
+```
+
+### 3.25 Jinja2
+tar xvf ${DOWNLOADDIR}/jinja2-3.1.5.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/jinja2-3.1.5
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user Jinja2
+popd
 
 ### 3.26 Meson
 	https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
@@ -663,10 +652,40 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/meson-1.7.0.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/meson-1.7.0
-    ${SYSDIR}/cross-tools/bin/python3 setup.py build
-    ${SYSDIR}/cross-tools/bin/python3 setup.py install
+	${SYSDIR}/cross-tools/bin/python3 setup.py build
+	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
 ```
+
+### 3.27 Pkg-Config
+　　https://distfiles.dereferenced.org/pkgconf/pkgconf-2.3.0.tar.xz
+
+　　为了能在交叉编译目标系统的过程中使用目标系统中已经安装的“pc”文件，我们在交叉工具链的目录中安装一个专门用来从目标系统目录中的查询“pc”文件的pkg-config命令，制作过程如下：
+
+```sh
+tar xvf ${DOWNLOADDIR}/pkgconf-2.3.0.tar.xz -C ${BUILDDIR}/
+pushd ${BUILDDIR}/pkgconf-2.3.0
+        ./configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} \
+                --host=${CROSS_HOST} --target=${CROSS_TARGET}
+	make ${JOBS}
+	make install
+        ln -sf pkgconf ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-pkg-config
+popd
+```
+
+### 3.28 Groff
+	https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+	编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
+
+```sh
+tar xvf ${DOWNLOADDIR}/groff-1.23.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/groff-1.23.0
+	PAGE=A4 ./configure --prefix=${SYSDIR}/cross-tools
+	make ${JOBS}
+	make install
+popd
+```
+
 
 
 ## 4 制作目标系统
@@ -1734,6 +1753,131 @@ pushd ${BUILDDIR}/libidn2-2.3.7
 popd
 ```
 
+#### Python3
+　　https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/Python-3.13.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.13.2
+	patch -Np1 -i ${DOWNLOADDIR}/0001-Python-3.13.1-fix-for-cross-build.patch
+cat > config.cache << "EOF"
+    ac_cv_aligned_required=no
+    ac_cv_broken_sem_getvalue=no
+    ac_cv_computed_gotos=yes
+    ac_cv_pthread_is_default=yes
+    ac_cv_pthread_system_supported=yes
+    ac_cv_working_tzset=yes
+    ac_cv_buggy_getaddrinfo=no
+    ac_cv_file__dev_ptmx=yes
+    ac_cv_file__dev_ptc=no
+EOF
+	./configure --prefix=/usr  --libdir=/usr/lib32 \
+	            --build=${CROSS_HOST} --host=${CROSS_TARGET} --enable-shared \
+		    --with-build-python=${SYSDIR}/cross-tools/bin/python3 \
+	            --with-system-expat --with-system-ffi --with-ensurepip=install \
+	            --enable-optimizations --with-platlibdir=lib32 \
+		    --with-openssl=${SYSDIR}/sysroot/usr \
+	            --cache-file=config.cache
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+ln -sv python3 ${SYSDIR}/sysroot/usr/bin/python
+
+cp -v ${SYSDIR}/sysroot/usr/bin/python3.13-config ${SYSDIR}/cross-tools/bin/
+sed -i "/prefix_real/s@=.*@=${SYSDIR}/sysroot/usr@g" ${SYSDIR}/cross-tools/bin/python3.13-config
+
+cp ${SYSDIR}/sysroot/usr/lib32/python3.13/_sysconfigdata__linux_loongarch32-linux-gnu.py ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+sed -i "/'INCLUDEPY'/s@'/usr/include@'${SYSDIR}/sysroot/usr/include@g" ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+
+sed -i -e "s@${SYSDIR}/sysroot@@g" \
+       -e "s@${CROSS_TARGET}-@@g" \
+       ${SYSDIR}/sysroot/usr/lib32/python3.13/_sysconfigdata__linux_loongarch64-linux-gnu.py
+
+echo "#!/bin/bash -e
+    _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} ${SYSDIR}/cross-tools/bin/python3 \"\$@\"
+" > ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
+chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
+```
+
+#### Python-Setuptools
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/setuptools-75.8.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-75.8.0
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user setuptools --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
+#### Python-Pip
+　　https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pip-25.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pip-25.0
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user pip --root=${SYSDIR}/sysroot --prefix=/usr
+	sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/pip{,3{,.13}}
+popd
+```
+
+#### Flit_Core
+　　https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/flit_core-3.10.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/flit_core-3.10.1
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user flit_core --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
+#### Wheel
+　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/wheel-0.45.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/wheel-0.45.1
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user wheel --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
+#### MarkupSafe
+　　https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-3.0.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/markupsafe-3.0.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/markupsafe-3.0.2
+    _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+    ${SYSDIR}/cross-tools/bin/python3 setup.py build
+    _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+    ${SYSDIR}/cross-tools/bin/python3 setup.py install --optimize=1 --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
+#### Jinja2
+　　https://files.pythonhosted.org/packages/source/j/jinja2/jinja2-3.1.5.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/jinja2-3.1.5.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/jinja2-3.1.5
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user Jinja2 --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
 #### Man-DB
 　　https://download.savannah.gnu.org/releases/man-db/man-db-2.13.0.tar.xz
 
@@ -1833,6 +1977,77 @@ popd
 
 　　Util-Linux带有大量的命令和库，由于部分命令已经在其它软件包中提供了，所以使用选项参数来关闭这些命令的编译和安装。
 
+#### Systemd
+　　https://github.com/systemd/systemd/archive/v257.2/systemd-257.2.tar.gz
+　　Systemd采用的是meson命令进行配置阶段的操作，meson与其他常见的configure脚本配置有明显的不同，在当前需要进行交叉编译的情况下要采用特定的配置操作步骤，以下将展开进行说明。
+
+```sh
+tar xvf ${DOWNLOADDIR}/systemd-257.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/systemd-257.2
+	patch -Np1 -i ${DOWNLOADDIR}/0001-systemd-257-add-loongarch32-support.patch
+	pushd src/basic
+        python3 missing_syscalls.py missing_syscall_def.h $(ls syscalls-*.txt)
+	popd
+	sed -i -e 's/GROUP="render"/GROUP="video"/' \
+	    -e 's/GROUP="sgx", //' rules.d/50-udev-default.rules.in
+	sed -i "s@Werror=undef',@& '-Wno-error=format-overflow', '-Wno-error=implicit-function-declaration',@g" meson.build
+```
+
+　　以上步骤是为了更新LoongArch32架构的系统调用表，并且对代码进行必要的修正。
+
+　　接下来的步骤是制作一个为meson命令用来交叉编译配置的文本文件，步骤如下：
+
+```sh
+pushd ${BUILDDIR}
+echo "[binaries]" > meson-cross.txt
+echo "c = '${CROSS_TARGET}-gcc'" >> meson-cross.txt
+echo "cpp = '${CROSS_TARGET}-g++'" >> meson-cross.txt
+echo "ar = '${CROSS_TARGET}-ar'" >> meson-cross.txt
+echo "strip = '${CROSS_TARGET}-strip'" >> meson-cross.txt
+echo "objcopy = '${CROSS_TARGET}-objcopy'" >> meson-cross.txt
+echo "pkgconfig = '${CROSS_TARGET}-pkg-config'" >> meson-cross.txt
+echo "cups-config = '${CROSS_TARGET}-cups-config'" >> meson-cross.txt
+echo "llvm-config = '${CROSS_TARGET}-llvm-config'" >> meson-cross.txt
+echo "vala = '${CROSS_TARGET}-valac'" >> meson-cross.txt
+echo "exe_wrapper = 'qemu-loongarch64'" >> meson-cross.txt
+echo "[properties]" >> meson-cross.txt
+echo "sys_root = '${SYSDIR}/sysroot'" >> meson-cross.txt
+echo "pkg_config_libdir = '${SYSDIR}/sysroot/usr/lib32/pkgconfig:${SYSDIR}/sysroot/usr/share/pkgconfig'" >> meson-cross.txt
+cat >> meson-cross.txt << "EOF"
+[host_machine]
+system = 'linux'
+cpu_family = 'loongarch32'
+cpu = 'loongarch32'
+endian = 'little'
+EOF
+popd
+```
+　　以上步骤完成后将在${BUILDDIR}目录中生成一个meson-cross.txt文件，该文件包含了使用meson配置软件包时目标架构的名字、系统、使用的工具链命令以及编译参数等等，这样在接下来的配置阶段中引用该文件就可以了。
+
+　　以下是配置和编译的步骤：
+
+```sh
+	mkdir -p build
+	pushd build
+		meson --prefix=/usr --libdir=/usr/lib32 --sysconfdir=/etc --localstatedir=/var \
+		      -Dbuildtype=release -Ddefault-dnssec=no -Dfirstboot=false \
+		      -Dinstall-tests=false -Dldconfig=false -Dsysusers=false \
+		      -Drpmmacrosdir=no -Dhomed=false -Duserdb=false -Dman=false -Dmode=release \
+		      -Dpamconfdir=/etc/pam.d \
+		      -Ddbuspolicydir=/usr/share/dbus-1/system.d -Ddbussessionservicedir=/usr/share/dbus-1/services \
+		      -Ddbussystemservicedir=/usr/share/dbus-1/system-services \
+		      -Dbashcompletiondir=/usr/share/bash-completion/completions \
+		      --cross-file ${BUILDDIR}/meson-cross.txt ..
+		ninja
+		DESTDIR=${SYSDIR}/sysroot ninja install
+	popd
+popd
+```
+
+　　较新版本的Systemd不再使用make命令进行编译了，配合meson使用ninja命令进行编译，在编译后同样用ninja命令安装软件包。
+
+　　安装命令支持“DESTDIR”变量设置，但与make命令不同的是“DESTDIR”变量需要写在ninja命令的前面，安装的参数是“install”，该命令执行后同样将软件包安装到目标系统存放的目录中。
+
 #### DBus
 　　https://dbus.freedesktop.org/releases/dbus/dbus-1.16.0.tar.xz
 
@@ -1852,6 +2067,22 @@ pushd ${BUILDDIR}/dbus-1.16.0
 popd
 ```
 	DBus软件包使用meson作为配置阶段的工具，我们使用准备好的meson-cross.txt作为交叉编译的配置文件进行配置。
+
+#### Procps-NG
+　　https://sourceforge.net/projects/procps-ng/files/Production//procps-ng-4.0.5.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/procps-ng-4.0.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/procps-ng-4.0.5
+	./configure --prefix=/usr --libdir=/usr/lib32  --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --disable-static --disable-kill --with-systemd \
+	            ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+　　Procps-ng软件包也是在交叉编译方式上会出现参数判断错误的情况，需要在配置阶段指定参数和取值。
 
 #### E2fsprogs
 　　https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v1.47.2/e2fsprogs-1.47.2.tar.gz
@@ -1892,6 +2123,20 @@ pushd ${BUILDDIR}/openssh-9.9p1
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install-nokeys host-key
 	install -v -m755 contrib/ssh-copy-id ${SYSDIR}/sysroot/usr/bin
+popd
+```
+
+#### PCIUtils
+　　https://mirrors.edge.kernel.org/pub/software/utils/pciutils/pciutils-3.13.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pciutils-3.13.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pciutils-3.13.0
+	make CROSS_COMPILE="${CROSS_TARGET}-" HOST="${CROSS_TARGET}" \
+	     PREFIX=/usr SHARED=yes LIBDIR=/usr/lib32 ${JOBS}
+	make CROSS_COMPILE="${CROSS_TARGET}-" HOST="${CROSS_TARGET}" \
+	     PREFIX=/usr SHARED=yes LIBDIR=/usr/lib32 STRIP="" \
+	     DESTDIR=${SYSDIR}/sysroot install install-lib
 popd
 ```
 
@@ -1963,6 +2208,19 @@ pushd ${BUILDDIR}/inetutils-2.5
 popd
 ```
 
+#### DHCPCD
+　　https://github.com/NetworkConfiguration/dhcpcd/archive/v10.1.0/dhcpcd-10.1.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/dhcpcd-10.1.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dhcpcd-10.1.0
+	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --disable-privsep
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 #### Wireless_Tools
 　　https://hewlettpackard.github.io/wireless-tools/wireless_tools.29.tar.gz
 
@@ -2026,6 +2284,22 @@ popd
 sed -i "/wheel ALL=(ALL:ALL) ALL/s@# @@g" ${SYSDIR}/sysroot/etc/sudoers.dist
 ```
 
+#### NSPR
+　　https://archive.mozilla.org/pub/nspr/releases/v4.36/src/nspr-4.36.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/nspr-4.36.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nspr-4.36/nspr
+    patch -Np2 -i ${DOWNLOADDIR}/nspr-4.36-add-loongarch32.patch
+    cp ${SYSDIR}/cross-tools/share/automake-*/config.* build/autoconf/
+    ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+                --host=${CROSS_TARGET} --with-mozilla \
+                --with-pthreads --enable-64bit
+    make CC="gcc" -C config
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
 
 #### ICU4C
 　　https://github.com/unicode-org/icu/releases/download/release-76-1/icu4c-76_1-src.tgz
@@ -2045,6 +2319,31 @@ pushd ${BUILDDIR}/icu/source
 	sed -i '/INVOKE/s@/bin/gensprep@/sbin/gensprep@g' data/rules.mk
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Meson
+　　https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/meson-1.7.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.7.0
+    ${SYSDIR}/cross-tools/bin/python3 setup.py build
+    ${SYSDIR}/cross-tools/bin/python3 setup.py install --root=${SYSDIR}/sysroot --prefix=/usr
+    sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/meson
+popd
+```
+
+#### Ninja
+　　https://github.com/ninja-build/ninja/archive/v1.12.1/ninja-1.12.1.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/ninja-1.12.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/ninja-1.12.1
+    CXX="${CROSS_TARGET}-g++" AR="${CROSS_TARGET}-ar" \
+    ${SYSDIR}/cross-tools/bin/python3 configure.py
+    ninja
+    install -vm755 ninja ${SYSDIR}/sysroot/usr/bin/
 popd
 ```
 
@@ -2253,6 +2552,34 @@ pushd ${BUILDDIR}/dosfstools-4.2
 popd
 ```
 
+#### Userspace-RCU
+　　https://lttng.org/files/urcu/userspace-rcu-0.15.0.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/userspace-rcu-0.15.0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/userspace-rcu-0.15.0
+    ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    rm -v ${SYSDIR}/sysroot/usr/lib64/liburcu*.la
+popd
+```
+
+#### Xfsprogs
+　　https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.12.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/xfsprogs-6.12.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/xfsprogs-6.12.0
+    patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-cross-build.patch
+    patch -Np1 -i ${DOWNLOADDIR}/0002-Fix-for-gcc-13.patch
+    CC=${CROSS_TARGET}-gcc ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+                --mandir=/usr/share/man
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 #### Libaio
 　　https://ftp.debian.org/debian/pool/main/liba/libaio/libaio_0.3.113.orig.tar.gz
 
@@ -2294,6 +2621,19 @@ pushd ${BUILDDIR}/pcre2-10.42
 		--enable-pcre2grep-libbz2 --enable-pcre2test-libreadline
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Packaging
+　　https://files.pythonhosted.org/packages/source/p/packaging/packaging-24.2.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/packaging-24.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/packaging-24.2
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user packaging --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
 
@@ -2692,6 +3032,70 @@ pushd ${BUILDDIR}/libtasn1-4.19.0
 popd
 ```
 
+#### P11-Kit
+　　https://github.com/p11-glue/p11-kit/releases/download/0.25.5/p11-kit-0.25.5.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/p11-kit-0.25.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/p11-kit-0.25.5
+    mkdir cross-build
+    pushd cross-build
+        meson --prefix=/usr --libdir=/usr/lib32 \
+              --buildtype=release \
+              -Dtrust_paths=/etc/pki/anchors \
+              --cross-file=${BUILDDIR}/meson-cross.txt ..
+        ninja
+        DESTDIR=${SYSDIR}/sysroot ninja install
+    popd
+popd
+```
+
+#### GnuTLS
+　　https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.8.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/gnutls-3.8.8.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gnutls-3.8.8
+    ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+                --enable-openssl-compatibility --enable-ssl3-support \
+                --with-default-trust-store-pkcs11="pkcs11:" \
+                --with-libz-prefix=${SYSDIR}/sysroot/usr \
+                --disable-guile --disable-doc
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+rm -v ${SYSDIR}/sysroot/usr/lib64/libgnutls*.la
+```
+
+#### LibUSB
+　　https://github.com/libusb/libusb/archive/v1.0.27/libusb-1.0.27.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libusb-1.0.27.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libusb-1.0.27
+    ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET}
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### USBUtils
+　　https://mirrors.edge.kernel.org/pub/linux/utils/usb/usbutils/usbutils-018.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/usbutils-018.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/usbutils-018
+   ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+                --datadir=/usr/share/hwdata
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    mkdir -v ${SYSDIR}/sysroot/usr/share/hwdata/
+    wget http://www.linux-usb.org/usb.ids -O ${SYSDIR}/sysroot/usr/share/hwdata/usb.ids
+popd
+```
+
 #### DHCP
 　　https://ftp.isc.org/isc/dhcp/4.4.3-P1/dhcp-4.4.3-P1.tar.gz
 
@@ -2778,7 +3182,7 @@ pushd ${BUILDDIR}/npth-1.8
 	        --enable-install-npth-config --enable-malloc0returnsnull
         CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
         make DESTDIR=${SYSDIR}/sysroot install
-        rm -f ${SYSDIR}/sysroot/usr/lib64/*.la
+        rm -f ${SYSDIR}/sysroot/usr/lib32/*.la
         cp -a ${SYSDIR}/sysroot/usr/bin/npth-config ${SYSDIR}/cross-tools/bin/
         sed -i "/^prefix/s@=\/usr@=${SYSDIR}\/sysroot\/usr@g" ${SYSDIR}/cross-tools/bin/npth-config
         sed -i "/^libs/s@-L\/usr@-L${SYSDIR}\/sysroot\/usr@g" ${SYSDIR}/cross-tools/bin/npth-config
@@ -2874,10 +3278,28 @@ pushd ${BUILDDIR}/nftables-1.1.1
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+	pushd py
+		_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+		${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+		_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+		${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user nftables --root=${SYSDIR}/sysroot --prefix=/usr
+	popd
 popd
-
 ```
 
+#### Firewalld
+　　https://github.com/firewalld/firewalld/releases/download/v2.3.0/firewalld-2.3.0.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/firewalld-2.3.0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/firewalld-2.3.0
+    ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+		PYTHON=${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
 
 ## 6 设置目标系统
 　　目标系统的软件包制作过程已经完成，接下来就是对目标系统进行必要的设置，以便目标系统可以正常的启动和使用。
