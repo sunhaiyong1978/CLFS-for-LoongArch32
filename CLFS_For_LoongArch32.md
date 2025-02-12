@@ -514,8 +514,8 @@ popd
 ```
 
 ### 3.15 Perl
-	https://www.cpan.org/src/5.0/perl-5.38.0.tar.xz
-	为了配合目标系统中编译Perl相关的软件包时能使用正确的路径，因此我们需要在交叉工具链中安装一个目标系统相同版本的Perl软件包。
+　　https://www.cpan.org/src/5.0/perl-5.38.0.tar.xz
+　　为了配合目标系统中编译Perl相关的软件包时能使用正确的路径，因此我们需要在交叉工具链中安装一个目标系统相同版本的Perl软件包。
 
 ```sh
 tar xvf ${DOWNLOADDIR}/perl-5.38.0.tar.gz -C ${BUILDDIR}
@@ -534,8 +534,8 @@ popd
 ```
 
 ### 3.16 XML-Parser
-	https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
-	给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
+　　https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
+　　给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
 
 ```sh
 tar xvf ${DOWNLOADDIR}/XML-Parser-2.47.tar.gz -C ${BUILDDIR}
@@ -547,8 +547,8 @@ popd
 ```
 
 ### 3.17 URI
-	https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
-	给交叉工具链中的Perl提供URI软件包提供的Perl组件。
+　　https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
+　　给交叉工具链中的Perl提供URI软件包提供的Perl组件。
 
 ```sh
 tar xvf ${DOWNLOADDIR}/URI-5.31.tar.gz -C ${BUILDDIR}
@@ -560,7 +560,7 @@ popd
 ```
 
 ### 3.18 Python3
-	https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
+　　https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
 
 ```sh
 tar xvf ${DOWNLOADDIR}/Python-3.13.1.tar.xz -C ${BUILDDIR}
@@ -584,8 +584,8 @@ popd
 ```
 
 ### 3.19 Setuptools
-	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
-	Setuptools软件包是Python的基础软件包之一。
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
@@ -595,15 +595,16 @@ popd
 
 
 ### 3.20 Pip
-	https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
-	pip软件包是Python的基础软件包之一。
+　　https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
+　　pip软件包是Python的基础软件包之一。
+
 ```sh
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
 ```
 
 ### 3.21 Flit-Core
-	https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
+　　https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
 
 ```sh
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
@@ -611,8 +612,8 @@ popd
 ```
 
 ### 3.22 Wheel
-	https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
-	Wheel软件包是Python的基础软件包之一。
+　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
+　　Wheel软件包是Python的基础软件包之一。
 ```sh
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user wheel
@@ -620,15 +621,15 @@ popd
 ```
 
 ### 3.23 Setuptools
-	https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
-	依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 ```sh
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 ```
 
 ### 3.24 MarkupSafe
-	https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-3.0.2.tar.gz
+　　https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-3.0.2.tar.gz
 
 ```sh
 tar xvf ${DOWNLOADDIR}/markupsafe-3.0.2.tar.gz -C ${BUILD_DIRECTORY}
@@ -639,15 +640,18 @@ popd
 ```
 
 ### 3.25 Jinja2
+
+```sh
 tar xvf ${DOWNLOADDIR}/jinja2-3.1.5.tar.gz -C ${BUILD_DIRECTORY}
 pushd ${BUILD_DIRECTORY}/jinja2-3.1.5
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user Jinja2
 popd
+```
 
 ### 3.26 Meson
-	https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
-	目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
+　　https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
+　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
 tar xvf ${DOWNLOADDIR}/meson-1.7.0.tar.gz -C ${BUILDDIR}
@@ -674,8 +678,8 @@ popd
 ```
 
 ### 3.28 Groff
-	https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
-	编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
+　　https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+　　编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
 
 ```sh
 tar xvf ${DOWNLOADDIR}/groff-1.23.0.tar.gz -C ${BUILDDIR}
@@ -686,6 +690,18 @@ pushd ${BUILDDIR}/groff-1.23.0
 popd
 ```
 
+### 3.29 Guile
+　　https://ftp.gnu.org/gnu/guile/guile-3.0.10.tar.xz
+　　编译目标系统的过程中会需要用到Guile软件包提供的工具，在交叉工具链的目录中安装一个版本较新的Guile。
+
+```sh
+tar xvf ${DOWNLOADDIR}/guile-3.0.10.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/guile-3.0.10
+    ./configure --prefix=${SYSDIR}/cross-tools
+    make ${JOBS}
+    make install
+popd
+```
 
 
 ## 4 制作目标系统
@@ -1351,6 +1367,7 @@ popd
 
 #### Bash-Completion
 　　https://github.com/scop/bash-completion/releases/download/2.16.0/bash-completion-2.16.0.tar.xz
+
 　　bash-completion软件包是bash的扩展包，可以帮助完善bash使用过程中命令参数的补全。
 
 ```sh
@@ -1484,7 +1501,23 @@ pushd ${BUILDDIR}/kmod-33
 popd
 ```
 
-#### Openssl
+#### Libffi
+
+```sh
+pushd ${BUILDDIR}
+git clone https://github.com/cloudspurs/libffi.git --depth 1 -b la32
+pushd libffi
+	CFLAGS="${CFLAGS} -Wno-implicit-function-declaration -mcmodel=medium" \
+	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
+	            --host=${CROSS_TARGET} --disable-static --with-gcc-arch=native
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	cp -a ${CROSS_TARGET}/.libs/libffi_convenience.a ${SYSROOT_DIR}/usr/lib32/libffi_pic.a
+popd
+popd
+```
+
+#### OpenSSL
 　　https://github.com/openssl/openssl/releases/download/openssl-3.4.0/openssl-3.4.0.tar.gz
 
 ```sh
@@ -2066,7 +2099,8 @@ pushd ${BUILDDIR}/dbus-1.16.0
 	ln -sfv /etc/machine-id ${SYSDIR}/sysroot/var/lib/dbus
 popd
 ```
-	DBus软件包使用meson作为配置阶段的工具，我们使用准备好的meson-cross.txt作为交叉编译的配置文件进行配置。
+
+　　DBus软件包使用meson作为配置阶段的工具，我们使用准备好的meson-cross.txt作为交叉编译的配置文件进行配置。
 
 #### Procps-NG
 　　https://sourceforge.net/projects/procps-ng/files/Production//procps-ng-4.0.5.tar.xz
@@ -2413,6 +2447,7 @@ popd
 
 #### GPM
 　　https://github.com/telmich/gpm/archive/1.20.7/gpm-1.20.7.tar.gz
+
 　　GPM软件包提供了在文本环境下使用鼠标的工具。
 
 ```sh
@@ -2465,6 +2500,7 @@ popd
 
 #### Links
 　　http://links.twibright.com/download/links-2.30.tar.bz2
+
 　　Links是一个文本环境下简易的互联网浏览器。
 
 ```sh
@@ -3015,6 +3051,23 @@ pushd ${BUILDDIR}/gc-8.2.8
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 	rm -v ${SYSDIR}/sysroot/usr/lib32/libgc*.la
+popd
+```
+
+#### Guile
+　　https://ftp.gnu.org/gnu/guile/guile-3.0.10.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/guile-3.0.10.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/guile-3.0.10
+	CFLAGS="${CFLAGS} -std=gnu11" \
+	./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+                --with-libgmp-prefix=${SYSDIR}/sysroot/usr/lib32 \
+                --with-libunistring-prefix=${SYSDIR}/sysroot/usr/lib32
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+	rm -v ${SYSDIR}/sysroot/usr/lib32/libguile*.la
 popd
 ```
 
