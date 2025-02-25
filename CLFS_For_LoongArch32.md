@@ -248,8 +248,8 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/shenjinyang/la32r-Linux.git --depth 1
-pushd la32r-Linux
+git clone https://github.com/FlyGoat/linux.git --depth 1 -b b4/la32
+pushd linux
 	make mrproper
 	make ARCH=loongarch INSTALL_HDR_PATH=dest headers_install
 	find dest/include -name '.*' -delete
@@ -515,6 +515,7 @@ popd
 
 ### 3.15 Perl
 　　https://www.cpan.org/src/5.0/perl-5.38.0.tar.xz
+
 　　为了配合目标系统中编译Perl相关的软件包时能使用正确的路径，因此我们需要在交叉工具链中安装一个目标系统相同版本的Perl软件包。
 
 ```sh
@@ -535,6 +536,7 @@ popd
 
 ### 3.16 XML-Parser
 　　https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.47.tar.gz
+
 　　给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
 
 ```sh
@@ -548,6 +550,7 @@ popd
 
 ### 3.17 URI
 　　https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
+
 　　给交叉工具链中的Perl提供URI软件包提供的Perl组件。
 
 ```sh
@@ -585,47 +588,67 @@ popd
 
 ### 3.19 Setuptools
 　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+
 　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
+tar xvf ${DOWNLOADDIR}/setuptools-75.8.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-75.8.0
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         ${SYSDIR}/cross-tools/bin/python3 setup.py install
+popd
 ```
 	编译Setuptools软件包建议使用pip命令，但因为当前使用pip命令编译存在依赖问题，所以本次编译Setuptools软件包直接使用python命令运行setup.py脚本进行编译和安装。
 
 
 ### 3.20 Pip
 　　https://github.com/pypa/pip/archive/25.0/pip-25.0.tar.gz
+
 　　pip软件包是Python的基础软件包之一。
 
 ```sh
+tar xvf ${DOWNLOADDIR}/pip-25.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/pip-25.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
+popd
 ```
 
 ### 3.21 Flit-Core
 　　https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.10.1.tar.gz
 
 ```sh
+tar xvf ${DOWNLOADDIR}/flit_core-3.10.1.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/flit_core-3.10.1
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user flit-core 
+        ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user flit-core
+popd
 ```
 
 ### 3.22 Wheel
 　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.45.1.tar.gz
+
 　　Wheel软件包是Python的基础软件包之一。
+
 ```sh
+tar xvf ${DOWNLOADDIR}/wheel-0.45.1.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/wheel-0.45.1
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user wheel
-
+popd
 ```
 
 ### 3.23 Setuptools
 　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-75.8.0.tar.gz
+
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
+
 ```sh
+tar xvf ${DOWNLOADDIR}/setuptools-75.8.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-75.8.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
+popd
 ```
 
 ### 3.24 MarkupSafe
@@ -651,6 +674,7 @@ popd
 
 ### 3.26 Meson
 　　https://github.com/mesonbuild/meson/archive/1.7.0/meson-1.7.0.tar.gz
+
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
@@ -679,6 +703,7 @@ popd
 
 ### 3.28 Groff
 　　https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
+
 　　编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
 
 ```sh
@@ -692,6 +717,7 @@ popd
 
 ### 3.29 Guile
 　　https://ftp.gnu.org/gnu/guile/guile-3.0.10.tar.xz
+
 　　编译目标系统的过程中会需要用到Guile软件包提供的工具，在交叉工具链的目录中安装一个版本较新的Guile。
 
 ```sh
@@ -703,6 +729,34 @@ pushd ${BUILDDIR}/guile-3.0.10
 popd
 ```
 
+### 3.30 LLVM
+　　https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/llvm-project-19.1.7.src.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/llvm-project-19.1.7.src.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/llvm-project-19.1.7.src/llvm
+    mkdir -p native-build
+    pushd native-build
+        LDFLAGS="${LDFLAGS} -lutil" PKG_CONFIG_SYSROOT_DIR="" \
+        cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=${SYSDIR}/cross-tools \
+                 -DCMAKE_CXX_COMPILER="g++" -DCMAKE_C_COMPILER="gcc" \
+                 -DBUILD_SHARED_LIBS:BOOL=OFF   -DCMAKE_BUILD_TYPE=Release  \
+                 -DCMAKE_C_FLAGS="-DNDEBUG" -DCMAKE_CXX_FLAGS="-DNDEBUG" \
+                 -DLLVM_ENABLE_LIBCXX:BOOL=OFF \
+		 -DLLVM_ENABLE_TERMINFO:BOOL=OFF \
+                 -DLLVM_ENABLE_RTTI:BOOL=ON -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON  \
+                 -DLLVM_LINK_LLVM_DYLIB:BOOL=ON  \
+                 -DCMAKE_INSTALL_RPATH="${SYSDIR}/cross-tools/lib32;\\\${ORIGIN}/../lib32" \
+                 -DLLVM_BUILD_EXTERNAL_COMPILER_RT:BOOL=ON   \
+                 -DLLVM_INSTALL_TOOLCHAIN_ONLY:BOOL=OFF \
+		 -DDEFAULT_SYSROOT:PATH="${SYSDIR}/sysroot" \
+                 -DLLVM_ENABLE_PROJECTS='llvm;clang;lld;lldb' \
+                 -DLLVM_DEFAULT_TARGET_TRIPLE=${CROSS_TARGET}
+        ninja
+        ninja install
+    popd
+popd
+```
 
 ## 4 制作目标系统
 　　交叉工具链及其相关的工具制作并安装完成后就可以继续制作目标系统了。
@@ -1971,7 +2025,7 @@ pushd ${BUILDDIR}/sqlite-3.48.0
 	cp ${SYSDIR}/cross-tools/share/automake-*/config.* ./
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
-		--enable-fts5 \
+		--enable-fts5 --soname=legacy \
 		CPPFLAGS="-DSQLITE_ENABLE_FTS3=1 \
                           -DSQLITE_ENABLE_FTS4=1 \
                           -DSQLITE_ENABLE_COLUMN_METADATA=1 \
@@ -3351,6 +3405,33 @@ pushd ${BUILDDIR}/firewalld-2.3.0
 		PYTHON=${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
     make ${JOBS}
     make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### LLVM
+
+```sh
+tar xvf ${DOWNLOADDIR}/llvm-project-19.1.7.src.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/llvm-project-19.1.7.src/llvm
+    mkdir cross-build
+    pushd cross-build
+        CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
+        cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_SHARED_LIBS:BOOL=OFF -DLLVM_ENABLE_LIBCXX:BOOL=OFF \
+              -DCMAKE_C_FLAGS="-DNDEBUG" -DCMAKE_CXX_FLAGS="-DNDEBUG" \
+              -DLLVM_BUILD_RUNTIME:BOOL=ON -DLLVM_ENABLE_RTTI:BOOL=ON \
+              -DLLVM_ENABLE_ZLIB:BOOL=ON -DLLVM_ENABLE_FFI:BOOL=ON \
+              -DLLVM_ENABLE_TERMINFO:BOOL=OFF \
+              -DLLVM_TABLEGEN:PATH=${SYSDIR}/cross-tools/bin/llvm-tblgen \
+              -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
+              -DLLVM_LINK_LLVM_DYLIB:BOOL=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT:BOOL=ON \
+              -DLLVM_INSTALL_TOOLCHAIN_ONLY:BOOL=OFF \
+	      -DLLVM_VERSION_SUFFIX='' \
+	      -DLLVM_HOST_TRIPLE=${CROSS_TARGET} \
+              -DLLVM_DEFAULT_TARGET_TRIPLE=${CROSS_TARGET}
+        ninja
+        DESTDIR=${SYSDIR}/sysroot ninja install
+    popd
 popd
 ```
 
