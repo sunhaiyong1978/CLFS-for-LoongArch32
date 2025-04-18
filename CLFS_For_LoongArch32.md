@@ -385,7 +385,6 @@ popd
 pushd ${BUILDDIR}
 git clone https://github.com/cloudspurs/glibc.git --depth 1 -b la32
 pushd glibc
-    sed -i "s@5.19.0@4.15.0@g" sysdeps/unix/sysv/linux/loongarch/configure{,.ac}
     mkdir -v build-32
     pushd build-32
 	BUILD_CC="gcc" CC="${CROSS_TARGET}-gcc ${BUILD32} ${CFLAGS} -Wno-implicit-function-declaration" \
@@ -397,7 +396,7 @@ pushd glibc
                  --with-headers=${SYSDIR}/sysroot/usr/include \
                  --enable-stack-protector=strong --enable-add-ons \
                  --disable-werror --disable-nscd libc_cv_slibdir=/usr/lib32 \
-                 --enable-kernel=4.15
+                 --enable-kernel=5.19.0
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
     popd
@@ -524,11 +523,11 @@ pushd ${BUILDDIR}/perl-5.40.2
     sed -i "s@/usr/include@${SYSDIR}/cross-tools/include@g" ext/Errno/Errno_pm.PL
     CFLAGS="-D_LARGEFILE64_SOURCE" ./configure.gnu --prefix=${SYSDIR}/cross-tools \
             -Dprivlib=${SYSDIR}/cross-tools/lib/perl5/5.4x/core_perl \
-            -Darchlib=${SYSDIR}/cross-tools/lib64/perl5/5.4x/core_perl \
+            -Darchlib=${SYSDIR}/cross-tools/lib32/perl5/5.4x/core_perl \
             -Dsitelib=${SYSDIR}/cross-tools/lib/perl5/5.4x/site_perl \
-            -Dsitearch=${SYSDIR}/cross-tools/lib64/perl5/5.4x/site_perl \
+            -Dsitearch=${SYSDIR}/cross-tools/lib32/perl5/5.4x/site_perl \
             -Dvendorlib=${SYSDIR}/cross-tools/lib/perl5/5.4x/vendor_perl \
-            -Dvendorarch=${SYSDIR}/cross-tools/lib64/perl5/5.4x/vendor_perl
+            -Dvendorarch=${SYSDIR}/cross-tools/lib32/perl5/5.4x/vendor_perl
     make ${JOBS}
     make install
 popd
@@ -569,20 +568,20 @@ popd
 tar xvf ${DOWNLOADDIR}/Python-3.13.3.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/Python-3.13.3
 	CFLAGS="${CFLAGS} -fPIC"
-	./configure --prefix=${SYSDIR}/cross-tools --with-platlibdir=lib64 \
+	./configure --prefix=${SYSDIR}/cross-tools --with-platlibdir=lib32 \
 	            --disable-shared --with-system-expat --with-system-ffi \
 	            --with-ensurepip=yes --enable-optimizations \
 	            ac_cv_broken_sem_getvalue=yes
 	make ${JOBS}
 	make install
 	sed -i "s@-lutil @@g" ${SYSDIR}/cross-tools/bin/python3.13-config
-	cp ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_{x86_64-linux-gnu,${CROSS_TARGET}}.py
+	cp ${SYSDIR}/cross-tools/lib32/python3.13/_sysconfigdata__linux_{x86_64-linux-gnu,${CROSS_TARGET}}.py
 	sed -i -e "/'CC'/s@'gcc@'${CROSS_TARGET}-gcc@g" \
 	       -e "/'CXX'/s@'g++@'${CROSS_TARGET}-g++@g" \
 	       -e "/'LDSHARED'/s@'gcc@'${CROSS_TARGET}-gcc@g" \
 	       -e "/'SOABI'/s@-x86_64-linux-gnu@@g" \
 	       -e "/'EXT_SUFFIX'/s@-x86_64-linux-gnu@@g" \
-	       ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+	       ${SYSDIR}/cross-tools/lib32/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
 popd
 ```
 
@@ -620,7 +619,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/flit_core-3.12.0.tar.gz -C ${BUILD_DIRECTORY}
 pushd ${BUILD_DIRECTORY}/flit_core-3.12.0
-        ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user flit-core
 popd
 ```
@@ -742,11 +741,11 @@ popd
 ```
 
 ### 3.31 LLVM
-　　https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.2/llvm-project-20.1.2.src.tar.xz
+　　https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.3/llvm-project-20.1.3.src.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/llvm-project-20.1.2.src.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/llvm-project-20.1.2.src/llvm
+tar xvf ${DOWNLOADDIR}/llvm-project-20.1.3.src.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
     mkdir -p native-build
     pushd native-build
         LDFLAGS="${LDFLAGS} -lutil" PKG_CONFIG_SYSROOT_DIR="" \
@@ -779,7 +778,8 @@ pushd qemu
     sed -i "/HAVE_OPENAT2_H/d" meson.build
     mkdir build
     pushd build
-        ../configure --prefix=${SYSDIR}/cross-tools --target-list=loongarch32-linux-user --disable-docs
+	LDFLAGS="" \
+        ../configure --prefix=${SYSDIR}/cross-tools --target-list=loongarch32-linux-user --disable-docs --static
         ninja
         cp qemu-loongarch32 ${SYSDIR}/cross-tools/bin/qemu-loongarch32.bin
     popd
@@ -824,7 +824,7 @@ tar xvf ${DOWNLOADDIR}/gobject-introspection-1.84.0.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/gobject-introspection-1.84.0
     mkdir native-build
     pushd native-build
-        meson --prefix=${SYSDIR}/cross-tools --libdir=${SYSDIR}/cross-tools/lib64 -Dbuild_introspection_data=false \
+        meson --prefix=${SYSDIR}/cross-tools --libdir=${SYSDIR}/cross-tools/lib64 \
               --buildtype=release ..
         ninja
         ninja install
@@ -2051,15 +2051,19 @@ ln -sv python3 ${SYSDIR}/sysroot/usr/bin/python
 cp -v ${SYSDIR}/sysroot/usr/bin/python3.13-config ${SYSDIR}/cross-tools/bin/
 sed -i "/prefix_real/s@=.*@=${SYSDIR}/sysroot/usr@g" ${SYSDIR}/cross-tools/bin/python3.13-config
 
-cp ${SYSDIR}/sysroot/usr/lib32/python3.13/_sysconfigdata__linux_loongarch32-linux-gnu.py ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
-sed -i "/'INCLUDEPY'/s@'/usr/include@'${SYSDIR}/sysroot/usr/include@g" ${SYSDIR}/cross-tools/lib64/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+cp ${SYSDIR}/sysroot/usr/lib32/python3.13/_sysconfigdata__linux_loongarch32-linux-gnu.py ${SYSDIR}/cross-tools/lib32/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
+sed -i "/'INCLUDEPY'/s@'/usr/include@'${SYSDIR}/sysroot/usr/include@g" ${SYSDIR}/cross-tools/lib32/python3.13/_sysconfigdata__linux_${CROSS_TARGET}.py
 
 sed -i -e "s@${SYSDIR}/sysroot@@g" \
        -e "s@${CROSS_TARGET}-@@g" \
        ${SYSDIR}/sysroot/usr/lib32/python3.13/_sysconfigdata__linux_loongarch32-linux-gnu.py
 
 echo "#!/bin/bash -e
+if [ -f ${SYSROOT_DIR}/usr/bin/python3 ]; then
+    qemu-loongarch32 ${SYSROOT}/sysroot/usr/bin/python3 \"\$@\"
+else
     _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} ${SYSDIR}/cross-tools/bin/python3 \"\$@\"
+fi
 " > ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 ```
@@ -2069,9 +2073,9 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 ```sh
 tar xvf ${DOWNLOADDIR}/setuptools-78.1.0.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/setuptools-78.1.0
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user setuptools --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
@@ -2081,9 +2085,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/pip-25.0.1.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/pip-25.0.1
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user pip --root=${SYSDIR}/sysroot --prefix=/usr
 	sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/pip{,3{,.13}}
 popd
@@ -2094,9 +2098,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/flit_core-3.12.0.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/flit_core-3.12.0
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user flit_core --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
@@ -2106,9 +2110,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/wheel-0.46.1.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/wheel-0.46.1
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user wheel --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
@@ -2119,10 +2123,10 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/markupsafe-3.0.2.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/markupsafe-3.0.2
-    _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
-    ${SYSDIR}/cross-tools/bin/python3 setup.py build
-    _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
-    ${SYSDIR}/cross-tools/bin/python3 setup.py install --optimize=1 --root=${SYSDIR}/sysroot --prefix=/usr
+    CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+    ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+    CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+    ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user MarkupSafe --root=${SYSROOT_DIR} --prefix=/usr
 popd
 ```
 
@@ -2132,9 +2136,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/jinja2-3.1.6.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/jinja2-3.1.6
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user Jinja2 --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
@@ -2522,14 +2526,56 @@ sed -i "/wheel ALL=(ALL:ALL) ALL/s@# @@g" ${SYSDIR}/sysroot/etc/sudoers.dist
 ```sh
 tar xvf ${DOWNLOADDIR}/nspr-4.36.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/nspr-4.36/nspr
-    patch -Np2 -i ${DOWNLOADDIR}/nspr-4.36-add-loongarch32.patch
+    patch -Np2 -i ${DOWNLOADDIR}/0001-nspr-add-loongarch32-support.patch
     cp ${SYSDIR}/cross-tools/share/automake-*/config.* build/autoconf/
     ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
                 --host=${CROSS_TARGET} --with-mozilla \
-                --with-pthreads --enable-64bit
+                --with-pthreads
     make CC="gcc" -C config
     make ${JOBS}
     make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### NSS
+　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_110_RTM/src/nss-3.110.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/nss-3.110.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nss-3.110/nss
+    sed -i "s@ uname -m@ cross-uname -m@g" coreconf/arch.mk
+    make CC="gcc" -C coreconf/nsinstall BUILD_OPT=1 \
+         CPU_ARCH="loongarch64" CROSS_COMPILE=1 NSS_ENABLE_WERROR=0 OS_TEST="loongarch64" ${JOBS}
+    make NATIVE_CC="gcc" CC="${CROSS_TARGET}-gcc" CCC="${CROSS_TARGET}-g++" \
+         BUILD_OPT=1 CPU_ARCH="loongarch64" CROSS_COMPILE=1 \
+         USE_SYSTEM_ZLIB=1 NSS_USE_SYSTEM_SQLITE=1 NSS_ENABLE_WERROR=0 \
+         NSPR_INCLUDE_DIR=${SYSDIR}/sysroot/usr/include/nspr OS_TEST="loongarch64" ${JOBS}
+
+    cat pkg/pkg-config/nss-config.in | sed -e "s,@prefix@,/usr,g" \
+        -e "s,@MOD_MAJOR_VERSION@,$(cat lib/util/nssutil.h \
+            | grep "#define.*NSSUTIL_VMAJOR" | awk '{print $3}'),g" \
+        -e "s,@MOD_MINOR_VERSION@,$(cat lib/util/nssutil.h \
+            | grep "#define.*NSSUTIL_VMINOR" | awk '{print $3}'),g" \
+        -e "s,@MOD_PATCH_VERSION@,$(cat lib/util/nssutil.h \
+            | grep "#define.*NSSUTIL_VPATCH" | awk '{print $3}'),g" \
+        > ${SYSDIR}/sysroot/usr/bin/nss-config
+
+    cat pkg/pkg-config/nss.pc.in | sed -e "s,%prefix%,/usr,g" \
+        -e 's,%exec_prefix%,${prefix},g' -e "s,%libdir%,/usr/lib32,g" \
+        -e 's,%includedir%,${prefix}/include/nss,g' \
+        -e "s,%NSS_VERSION%,$(cat lib/util/nssutil.h \
+            | grep "#define.*NSSUTIL_VERSION" | awk '{print $3}'),g" \
+        -e "s,%NSPR_VERSION%,$(cat ${SYSDIR}/sysroot/usr/include/nspr/prinit.h \
+            | grep "#define.*PR_VERSION" | awk '{print $3}'),g" \
+        > ${SYSDIR}/sysroot/usr/lib32/pkgconfig/nss.pc
+popd
+pushd ${BUILDDIR}/nss-3.110/dist
+    install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
+    install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
+    install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
+    cp -v -RL {public,private}/nss/* ${SYSDIR}/sysroot/usr/include/nss
+    chmod -v 644 ${SYSDIR}/sysroot/usr/include/nss/*
+    install -v -m755 Linux*/bin/{certutil,pk12util} ${SYSDIR}/sysroot/usr/bin
 popd
 ```
 
@@ -2578,6 +2624,56 @@ pushd ${BUILDDIR}/ninja-1.12.1
 popd
 ```
 
+#### Perl5
+```sh
+tar xvf ${DOWNLOADDIR}/perl-5.40.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/perl-5.40.2
+	sh Configure -des -Dprefix=/usr -Dvendorprefix=/usr \
+	             -Dprivlib=/usr/lib/perl5/5.4x/core_perl \
+	             -Darchlib=/usr/lib32/perl5/5.4x/core_perl \
+	             -Dsitelib=/usr/lib/perl5/5.4x/site_perl \
+	             -Dsitearch=/usr/lib32/perl5/5.4x/site_perl \
+	             -Dvendorlib=/usr/lib/perl5/5.4x/vendor_perl \
+	             -Dvendorarch=/usr/lib32/perl5/5.4x/vendor_perl \
+	             -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 \
+	             -Dpager="/usr/bin/less -isR" -Duseshrplib -Dusethreads \
+	             -Dusecrosscompile
+	cp ${DOWNLOADDIR}/perl-5.x-loongarch32-config.sh ./config.sh
+	sed -i "/^cc=/s@'cc'@'${CROSS_TARGET}-gcc'@g" config.sh
+	sed -i "/^ld=/s@'cc'@'${CROSS_TARGET}-gcc'@g" config.sh
+	./Configure -S
+	make depend
+	make ${JOBS}
+	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### XML-Parser
+```sh
+tar xvf ${DOWNLOADDIR}/XML-Parser-2.47.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/XML-Parser-2.47
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
+    sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile Expat/Makefile
+    sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile Expat/Makefile
+    sed -i "/^LDDLFLAGS/s@/usr/local/lib@${SYSDIR}/sysroot/usr/lib32@g" Makefile Expat/Makefile
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### URI
+```sh
+tar xvf ${DOWNLOADDIR}/URI-5.31.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/URI-5.31
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
+    sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile
+    sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile
+    sed -i "/^LDDLFLAGS/s@/usr/local/lib@${SYSDIR}/sysroot/usr/lib32@g" Makefile
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 #### Libgpg-error
 　　https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.53.tar.bz2
 
@@ -2619,8 +2715,10 @@ pushd ${BUILDDIR}/libxml2-2.14.1
 	mkdir cross-build
 	pushd cross-build
 		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
-			--host=${CROSS_TARGET} --with-history --with-icu \
-			--with-http --with-python=no
+			--host=${CROSS_TARGET} --with-history --with-icu --with-http \
+			--with-python=${CROSSTOOLS_DIR}/bin/${CROSS_TARGET}-python3 \
+			--with-python_install_dir=/usr/lib32/python3.13/site-packages \
+			PYTHON=${CROSS_TARGET}-python3
 		make ${JOBS}
 		make DESTDIR=${SYSDIR}/sysroot install
 		rm ${SYSDIR}/sysroot/usr/lib32/libxml2.la
@@ -2637,7 +2735,7 @@ pushd ${BUILDDIR}/libxslt-1.1.43
 	rm config.{sub,guess}
 	automake -a
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
-		--host=${CROSS_TARGET} --without-python
+		--host=${CROSS_TARGET} PYTHON=${CROSS_TARGET}-python3
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
@@ -2787,11 +2885,11 @@ popd
 ```
 
 #### Userspace-RCU
-　　https://lttng.org/files/urcu/userspace-rcu-0.15.1.tar.bz2
+　　https://lttng.org/files/urcu/userspace-rcu-0.15.2.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/userspace-rcu-0.15.1.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/userspace-rcu-0.15.1
+tar xvf ${DOWNLOADDIR}/userspace-rcu-0.15.2.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/userspace-rcu-0.15.2
     ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
     make ${JOBS}
     make DESTDIR=${SYSDIR}/sysroot install
@@ -2800,14 +2898,13 @@ popd
 ```
 
 #### Xfsprogs
-　　https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.13.0.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.14.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/xfsprogs-6.13.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/xfsprogs-6.13.0
+tar xvf ${DOWNLOADDIR}/xfsprogs-6.14.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/xfsprogs-6.14.0
     patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-cross-build.patch
     patch -Np1 -i ${DOWNLOADDIR}/0002-Fix-for-gcc-13.patch
-    patch -Np1 -i ${DOWNLOADDIR}/0001-xfsprogs-6.13-fix-long-to-off_t-type-for-build-error.patch
     CC=${CROSS_TARGET}-gcc ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --with-systemd-unit-dir=/usr/lib/systemd/system --with-udev-rule-dir=/usr/lib/udev/rules.d
     make -j
@@ -2892,9 +2989,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/packaging-24.2.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/packaging-24.2
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-	_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user packaging --root=${SYSDIR}/sysroot --prefix=/usr
 popd
 ```
@@ -2906,7 +3003,7 @@ tar xvf ${DOWNLOADDIR}/glib-2.84.1.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/glib-2.84.1
     mkdir build
     pushd build
-        meson --prefix=/usr --libdir=/usr/lib64 \
+        meson --prefix=/usr --libdir=/usr/lib32 \
               --buildtype=release -Dtests=false --default-library=both \
               -Dman=true -Dselinux=disabled -Dintrospection=disabled -Dman-pages=false \
               --cross-file=${BUILDDIR}/meson-cross.txt \
@@ -2918,11 +3015,11 @@ popd
 ```
 
 #### VIM
-　　https://github.com/vim/vim/archive/v9.1.1288/vim-9.1.1288.tar.gz
+　　https://github.com/vim/vim/archive/v9.1.1313/vim-9.1.1313.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/vim-9.1.1288.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/vim-9.1.1288
+tar xvf ${DOWNLOADDIR}/vim-9.1.1313.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vim-9.1.1313
 	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
 cat > src/auto/config.cache << EOF
 	vim_cv_getcwd_broken=no
@@ -3033,6 +3130,21 @@ pushd ${BUILDDIR}/ethtool-6.14
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Boost
+```sh
+tar xvf ${DOWNLOADDIR}/boost_1_88_0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/boost_1_88_0
+    patch -Np1 -i ${DOWNLOADDIR}/0001-boost-add-loongarch32-support.patch
+    ./bootstrap.sh ICU_ROOT=${SYSDIR}/sysroot/usr --prefix=/usr --libdir=/usr/lib32 --with-python=${CROSS_TARGET}-python3
+    sed -i "/using gcc/s@using gcc@& : loongarch32 : ${CROSS_TARGET}-gcc@g" project-config.jam
+    sed -i "s@mips @mips1 @g" libs/log/build/log-arch-config.jam
+    ./b2 stage threading=multi link=shared address-model=32 toolset=gcc-loongarch32 linkflags="-lstdc++"
+    rm -rf ${SYSDIR}/sysroot/usr/lib/cmake/[Bb]oost*
+    ./b2 install --prefix=${SYSDIR}/sysroot/usr --libdir=${SYSDIR}/sysroot/usr/lib32 \
+             threading=multi link=shared address-model=32 toolset=gcc-loongarch32 linkflags="-lstdc++"
 popd
 ```
 
@@ -3452,6 +3564,19 @@ popd
 rm -v ${SYSDIR}/sysroot/usr/lib32/libgnutls*.la
 ```
 
+#### Vala
+```sh
+tar xvf ${DOWNLOADDIR}/vala-0.56.18.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vala-0.56.18
+    CFLAGS="${CFLAGS} -Wno-incompatible-pointer-types" \
+    ./configure --prefix=/usr --libdir=/usr/lib32 \
+                --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+                --disable-valadoc
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 #### LibUSB
 　　https://github.com/libusb/libusb/archive/v1.0.28/libusb-1.0.28.tar.gz
 
@@ -3681,11 +3806,11 @@ popd
 ```
 
 #### Libnftnl
-　　https://www.netfilter.org/pub/libnftnl/libnftnl-1.2.8.tar.xz
+　　https://www.netfilter.org/pub/libnftnl/libnftnl-1.2.9.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libnftnl-1.2.8.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libnftnl-1.2.8
+tar xvf ${DOWNLOADDIR}/libnftnl-1.2.9.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnftnl-1.2.9
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
@@ -3707,19 +3832,19 @@ popd
 
 ```
 #### Nftables
-　　https://www.netfilter.org/pub/nftables/nftables-1.1.1.tar.xz
+　　https://www.netfilter.org/pub/nftables/nftables-1.1.2.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nftables-1.1.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nftables-1.1.1
+tar xvf ${DOWNLOADDIR}/nftables-1.1.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nftables-1.1.2
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 	pushd py
-		_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+		CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 		${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
-		_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+		CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 		${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user nftables --root=${SYSDIR}/sysroot --prefix=/usr
 	popd
 popd
@@ -3742,8 +3867,8 @@ popd
 #### LLVM
 
 ```sh
-tar xvf ${DOWNLOADDIR}/llvm-project-20.1.2.src.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/llvm-project-20.1.2.src/llvm
+tar xvf ${DOWNLOADDIR}/llvm-project-20.1.3.src.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
     mkdir cross-build
     pushd cross-build
         CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
