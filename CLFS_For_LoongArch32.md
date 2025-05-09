@@ -57,7 +57,7 @@ sudo dnf install @core @c-development glibc-langpack-zh rpm-build git wget texin
                  glib2-static libstdc++-static zlib-static \
                  fpc tcl ncurses-devel gperf openssl icu docbook-style-xsl bc squashfs-tools \
                  graphviz doxygen xmlto xcursorgen dbus-glib lynx gtk-doc sqlite \
-                 asciidoc itstools \
+                 asciidoc itstools perl-open perl-FindBin \
                  --installroot ${HOME}/la-clfs --disablerepo="*" \
                  --repofrompath core,${DISTRO_URL} \
                  --releasever 38 --nogpgcheck
@@ -586,13 +586,13 @@ popd
 ```
 
 ### 3.19 Setuptools
-　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-78.1.0.tar.gz
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.0.0.tar.gz
 
 　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-78.1.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-78.1.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.0.0
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         ${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -601,13 +601,13 @@ popd
 
 
 ### 3.20 Pip
-　　https://github.com/pypa/pip/archive/25.0.1/pip-25.0.1.tar.gz
+　　https://github.com/pypa/pip/archive/25.1/pip-25.1.tar.gz
 
 　　pip软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.0.1.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/pip-25.0.1
+tar xvf ${DOWNLOADDIR}/pip-25.1.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/pip-25.1
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
 popd
@@ -642,8 +642,8 @@ popd
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-78.1.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-78.1.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.0.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 popd
@@ -672,13 +672,13 @@ popd
 ```
 
 ### 3.26 Meson
-　　https://github.com/mesonbuild/meson/archive/1.7.2/meson-1.7.2.tar.gz
+　　https://github.com/mesonbuild/meson/archive/1.8.0/meson-1.8.0.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.7.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.7.2
+tar xvf ${DOWNLOADDIR}/meson-1.8.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.8.0
 	${SYSDIR}/cross-tools/bin/python3 setup.py build
 	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -1052,7 +1052,8 @@ tar xvf ${DOWNLOADDIR}/gmp-6.3.0.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/gmp-6.3.0
 	rm config.guess config.sub
 	automake --add-missing
-	./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} \
+	CFLAGS="${CFLAGS} -std=gnu17" \
+	ABI=standard ./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --prefix=/usr --libdir=/usr/lib32 --enable-cxx
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
@@ -1218,7 +1219,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/ncurses-6.5.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/ncurses-6.5
-	CFLAGS="${CFLAGS} -std=gnu11" \
+	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --with-shared --without-debug \
 	            --without-normal --enable-pc-files --without-ada \
@@ -1271,8 +1272,8 @@ popd
 tar xvf ${DOWNLOADDIR}/m4-1.4.19.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/m4-1.4.19
 	patch -Np1 -i ${DOWNLOADDIR}/stack-direction-add-loongarch.patch
-	CFLAGS="${CFLAGS} -std=gnu11" \
-	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	CFLAGS="${CFLAGS} -std=gnu17" \
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} AUTOMAKE=automake ACLOCAL=aclocal
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
@@ -1284,7 +1285,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/bc-7.0.3.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/bc-7.0.3
-	CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" ./configure --prefix=/usr
+	CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" CFLAGS="${CFLAGS} -std=gnu17" ./configure --prefix=/usr
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
@@ -1296,6 +1297,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/flex-2.6.4.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/flex-2.6.4
+	patch -Np1 -i ${DOWNLOADDIR}/0001-flex-2.6.4-fix-build-error-for-gcc-15.patch
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static ac_cv_func_malloc_0_nonnull=yes \
 	            ac_cv_func_realloc_0_nonnull=yes
@@ -1397,6 +1399,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/pkg-config-0.29.2.tar.gz -C ${BUILDDIR}/
 pushd ${BUILDDIR}/pkg-config-0.29.2
+	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --with-internal-glib --disable-host-tool \
 	            glib_cv_stack_grows=yes glib_cv_uscore=no \
@@ -1489,8 +1492,9 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/expect5.45.4.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/expect5.45.4
-    patch -Np1 -i ${DOWNLOADDIR}/0001-enable-cross-compilation.patch
-    autoreconf -ifv
+	patch -Np1 -i ${DOWNLOADDIR}/0001-enable-cross-compilation.patch
+	autoreconf -ifv
+	CFLAGS="${CFLAGS} -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 	            --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 	            --with-tcl=${SYSDIR}/sysroot/usr/lib32 \
@@ -1545,7 +1549,7 @@ cat > config.cache << "EOF"
 	gt_cv_int_divbyzero_sigfpe=yes
 EOF
 
-	CFLAGS="${CFLAGS} -Wno-incompatible-pointer-types -std=gnu11" \
+	CFLAGS_FOR_BUILD="-std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --without-bash-malloc \
 	            --with-installed-readline --cache-file=config.cache
@@ -1598,6 +1602,7 @@ sed -i -e "s@${SYSDIR}/cross-tools/${CROSS_TARGET}@/usr@g" \
 ```sh
 tar xvf ${DOWNLOADDIR}/gdbm-1.25.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/gdbm-1.25
+	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --enable-libgdbm-compat
 	make ${JOBS}
@@ -1607,11 +1612,11 @@ popd
 ```
 
 #### gperf
-　　https://ftp.gnu.org/gnu/gperf/gperf-3.2.1.tar.gz
+　　https://ftp.gnu.org/gnu/gperf/gperf-3.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gperf-3.2.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gperf-3.2.1
+tar xvf ${DOWNLOADDIR}/gperf-3.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gperf-3.3
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
@@ -1697,11 +1702,11 @@ popd
 ```
 
 #### Elfutils
-　　https://sourceware.org/ftp/elfutils/0.192/elfutils-0.192.tar.bz2
+　　https://sourceware.org/ftp/elfutils/0.193/elfutils-0.193.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/elfutils-0.192.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/elfutils-0.192
+tar xvf ${DOWNLOADDIR}/elfutils-0.193.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/elfutils-0.193
 	sed -i.orig "s@GENDIS_ENV) \./i386_gendis@GENDIS_ENV) qemu-loongarch32 \./i386_gendis@g" libcpu/Makefile.am
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 				--host=${CROSS_TARGET} --disable-debuginfod --enable-libdebuginfod=dummy --enable-maintainer-mode \
@@ -2071,8 +2076,8 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 #### Python-Setuptools
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-78.1.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-78.1.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-80.0.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2083,8 +2088,8 @@ popd
 #### Python-Pip
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.0.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/pip-25.0.1
+tar xvf ${DOWNLOADDIR}/pip-25.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pip-25.1
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2328,6 +2333,7 @@ tar xvf ${DOWNLOADDIR}/e2fsprogs-1.47.2.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/e2fsprogs-1.47.2
 	mkdir -v build
 	pushd build
+		CFLAGS="${CFLAGS} -std=gnu17" \
 		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 		             --host=${CROSS_TARGET} --sysconfdir=/etc \
 		             --enable-elf-shlibs --disable-libblkid \
@@ -2603,8 +2609,8 @@ popd
 #### Meson
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.7.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.7.2
+tar xvf ${DOWNLOADDIR}/meson-1.8.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.8.0
     ${SYSDIR}/cross-tools/bin/python3 setup.py build
     ${SYSDIR}/cross-tools/bin/python3 setup.py install --root=${SYSDIR}/sysroot --prefix=/usr
     sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/meson
@@ -2675,11 +2681,11 @@ popd
 ```
 
 #### Libgpg-error
-　　https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.53.tar.bz2
+　　https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.55.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libgpg-error-1.53.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/libgpg-error-1.53
+tar xvf ${DOWNLOADDIR}/libgpg-error-1.55.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libgpg-error-1.55
 	cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* build-aux/
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 		--host=${CROSS_TARGET}
@@ -2707,11 +2713,11 @@ popd
 
 
 #### Libxml2
-　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.1.tar.xz
+　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.2.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libxml2-2.14.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libxml2-2.14.1
+tar xvf ${DOWNLOADDIR}/libxml2-2.14.2.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxml2-2.14.2
 	mkdir cross-build
 	pushd cross-build
 		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2752,6 +2758,7 @@ pushd ${BUILDDIR}/gpm-1.20.7
 	patch -Np1 -i ${DOWNLOADDIR}/gpm-1.20.7-consolidated-1.patch
 	patch -Np1 -i ${DOWNLOADDIR}/gpm-1.20.1-weak-wgetch.patch
 	./autogen.sh
+	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --sysconfdir=/etc \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
@@ -2984,11 +2991,11 @@ popd
 ```
 
 #### Packaging
-　　https://files.pythonhosted.org/packages/source/p/packaging/packaging-24.2.tar.gz
+　　https://files.pythonhosted.org/packages/source/p/packaging/packaging-25.0.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/packaging-24.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/packaging-24.2
+tar xvf ${DOWNLOADDIR}/packaging-25.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/packaging-25.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -3015,11 +3022,11 @@ popd
 ```
 
 #### VIM
-　　https://github.com/vim/vim/archive/v9.1.1313/vim-9.1.1313.tar.gz
+　　https://github.com/vim/vim/archive/v9.1.1322/vim-9.1.1322.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/vim-9.1.1313.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/vim-9.1.1313
+tar xvf ${DOWNLOADDIR}/vim-9.1.1322.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vim-9.1.1322
 	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
 cat > src/auto/config.cache << EOF
 	vim_cv_getcwd_broken=no
@@ -3087,7 +3094,7 @@ tar xvf ${DOWNLOADDIR}/unzip60.tgz -C ${BUILDDIR}
 pushd ${BUILDDIR}/unzip60
 	sed -i "s@-DNO_LCHMOD@@g" unix/configure
 	make -f unix/Makefile CC="${CROSS_TARGET}-gcc \
-	     -DLARGE_FILE_SUPPORT -DUNICODE_WCHAR -DUNICODE_SUPPORT" generic ${JOBS}
+	     -DLARGE_FILE_SUPPORT -DUNICODE_WCHAR -DUNICODE_SUPPORT -std=gnu17" generic ${JOBS}
 	make prefix=${SYSDIR}/sysroot/usr MANDIR=${SYSDIR}/sysroot/usr/share/man/man1 \
 	      -f unix/Makefile install
 popd
@@ -3100,6 +3107,7 @@ popd
 tar xvf ${DOWNLOADDIR}/cpio-2.15.tar.bz2 -C ${BUILDDIR}
 pushd ${BUILDDIR}/cpio-2.15
 	sed -i '/The name/,+2 d' src/global.c
+	CFLAGS="${CFLAGS} -Wno-implicit-function-declaration -std=gnu17" \
 	./configure --prefix=/usr --build=${CROSS_HOST} \
 		--host=${CROSS_TARGET} --enable-mt \
 		--with-rmt=/usr/libexec/rmt
@@ -3138,8 +3146,9 @@ popd
 tar xvf ${DOWNLOADDIR}/boost_1_88_0.tar.bz2 -C ${BUILDDIR}
 pushd ${BUILDDIR}/boost_1_88_0
     patch -Np1 -i ${DOWNLOADDIR}/0001-boost-add-loongarch32-support.patch
-    ./bootstrap.sh ICU_ROOT=${SYSDIR}/sysroot/usr --prefix=/usr --libdir=/usr/lib32 --with-python=${CROSS_TARGET}-python3
+    ./bootstrap.sh ICU_ROOT=${SYSDIR}/sysroot/usr --prefix=/usr --libdir=/usr/lib32 --with-python=python3
     sed -i "/using gcc/s@using gcc@& : loongarch32 : ${CROSS_TARGET}-gcc@g" project-config.jam
+    sed -i "/using python/s@${CROSSTOOLS_DIR}@${CROSSTOOLS_DIR}/bin/${CROSS_TARGET}-python3@g" project-config.jam
     sed -i "s@mips @mips1 @g" libs/log/build/log-arch-config.jam
     ./b2 stage threading=multi link=shared address-model=32 toolset=gcc-loongarch32 linkflags="-lstdc++"
     rm -rf ${SYSDIR}/sysroot/usr/lib/cmake/[Bb]oost*
@@ -3347,11 +3356,11 @@ cp -a ${SYSDIR}/sysroot/usr/bin/glib-mkenums ${SYSDIR}/cross-tools/bin/
 ```
 
 #### HarfBuzz
-　　https://github.com/harfbuzz/harfbuzz/releases/download/11.0.1/harfbuzz-11.0.1.tar.xz
+　　https://github.com/harfbuzz/harfbuzz/releases/download/11.2.0/harfbuzz-11.2.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.0.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.0.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.1
     mkdir cross-build
     pushd cross-build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3370,6 +3379,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/graphite-1.3.14.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/graphite-1.3.14
+	patch -Np1 -i ${DOWNLOADDIR}/0001-graphite-1.3.14-fix-for-gcc-15.patch
 	sed -i "/mfpmath/d" src/CMakeLists.txt
 	mkdir build
 	pushd build
@@ -3386,8 +3396,8 @@ popd
 　　这次编译是加入对Graphite的支持。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.0.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.0.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.1.0
     mkdir cross-build-2
     pushd cross-build-2
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3503,7 +3513,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/guile-3.0.10.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/guile-3.0.10
-	CFLAGS="${CFLAGS} -std=gnu11" \
+	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --with-libgmp-prefix=${SYSDIR}/sysroot/usr/lib32 \
@@ -3664,7 +3674,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/dhcp-4.4.3-P1.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/dhcp-4.4.3-P1
-        CFLAGS="${CFLAGS:--g -O2} -Wall -fno-strict-aliasing -Wno-incompatible-pointer-types -std=gnu11 \
+        CFLAGS="${CFLAGS:--g -O2} -Wall -fno-strict-aliasing -Wno-incompatible-pointer-types -std=gnu17 \
         -D_PATH_DHCLIENT_SCRIPT='\"/usr/sbin/dhclient-script\"' \
         -D_PATH_DHCPD_CONF='\"/etc/dhcp/dhcpd.conf\"' \
         -D_PATH_DHCLIENT_CONF='\"/etc/dhcp/dhclient.conf\"'" \
@@ -3832,11 +3842,11 @@ popd
 
 ```
 #### Nftables
-　　https://www.netfilter.org/pub/nftables/nftables-1.1.2.tar.xz
+　　https://www.netfilter.org/pub/nftables/nftables-1.1.3.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nftables-1.1.2.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nftables-1.1.2
+tar xvf ${DOWNLOADDIR}/nftables-1.1.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nftables-1.1.3
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
