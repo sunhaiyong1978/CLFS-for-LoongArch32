@@ -40,7 +40,7 @@ sudo chmod +x /usr/bin/qemu-loongarch32
 
 ```sh
 cd /tmp
-wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.9/loongarch32-Yongbao-Embedded-0.9-20250423-sysroot.tar.xz
+wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.10/loongarch32-Yongbao-Embedded-0.10-20250516-sysroot.tar.xz
 ```
 
 　　以上下载的系统是一个完全使用已开放的源代码构建的基于LoongArch32指令集架构的Linux系统。
@@ -53,7 +53,7 @@ wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.9
 cd /opt
 sudo mkdir clfs-os
 cd clfs-os
-sudo tar xvpf /tmp/loongarch32-Yongbao-Embedded-0.9-20250423-sysroot.tar.xz
+sudo tar xvpf /tmp/loongarch32-Yongbao-Embedded-0.10-20250516-sysroot.tar.xz
 ```
 　　经过一段时间的解压后，我们就在/opt/clfs-os目录中拥有了一个基于LoongArch指令集制作的系统。
 
