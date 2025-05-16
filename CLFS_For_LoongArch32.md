@@ -548,13 +548,13 @@ popd
 ```
 
 ### 3.17 URI
-　　https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.31.tar.gz
+　　https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.32.tar.gz
 
 　　给交叉工具链中的Perl提供URI软件包提供的Perl组件。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/URI-5.31.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/URI-5.31
+tar xvf ${DOWNLOADDIR}/URI-5.32.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/URI-5.32
     ${SYSDIR}/cross-tools/bin/perl Makefile.PL
     make ${JOBS}
     make install
@@ -586,13 +586,13 @@ popd
 ```
 
 ### 3.19 Setuptools
-　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.0.0.tar.gz
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.4.0.tar.gz
 
 　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-80.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.4.0
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         ${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -601,13 +601,13 @@ popd
 
 
 ### 3.20 Pip
-　　https://github.com/pypa/pip/archive/25.1/pip-25.1.tar.gz
+　　https://github.com/pypa/pip/archive/25.1.1/pip-25.1.1.tar.gz
 
 　　pip软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.1.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/pip-25.1
+tar xvf ${DOWNLOADDIR}/pip-25.1.1.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/pip-25.1.1
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
 popd
@@ -642,8 +642,8 @@ popd
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-80.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.4.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 popd
@@ -741,11 +741,11 @@ popd
 ```
 
 ### 3.31 LLVM
-　　https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.3/llvm-project-20.1.3.src.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/llvm-project-20.1.3.src.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
+pushd ${BUILDDIR}
+git clone https://github.com/heiher/llvm-project.git --depth 1 -b la32
+pushd llvm-project
     mkdir -p native-build
     pushd native-build
         LDFLAGS="${LDFLAGS} -lutil" PKG_CONFIG_SYSROOT_DIR="" \
@@ -762,10 +762,13 @@ pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
                  -DLLVM_INSTALL_TOOLCHAIN_ONLY:BOOL=OFF \
 		 -DDEFAULT_SYSROOT:PATH="${SYSDIR}/sysroot" \
                  -DLLVM_ENABLE_PROJECTS='llvm;clang;lld;lldb' \
+		 -DCLANG_DEFAULT_LINKER=lld \
                  -DLLVM_DEFAULT_TARGET_TRIPLE=${CROSS_TARGET}
         ninja
         ninja install
     popd
+popd
+rm -rf llvm-project
 popd
 ```
 
@@ -1000,22 +1003,22 @@ EOF
 ### 4.2 软件包的制作
 
 #### Man-Pages
-　　https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/man-pages-6.13.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/man-pages-6.14.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/man-pages-6.13.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/man-pages-6.13
+tar xvf ${DOWNLOADDIR}/man-pages-6.14.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/man-pages-6.14
 	make prefix=/usr DESTDIR=${SYSDIR}/sysroot install -R
 popd
 ```
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20250407/iana-etc-20250407.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20250505/iana-etc-20250505.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20250407.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20250407
+tar xvf ${DOWNLOADDIR}/iana-etc-20250505.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20250505
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -1266,12 +1269,11 @@ popd
 　　由于交叉编译的原因，Redaline的配置脚本无法正确的探测目标系统中安装的Ncurses软件包，因此在配置中加入```--with-curses```参数保证加入Ncurses的支持以及在编译阶段加入```SHLIB_LIBS="-lncursesw"```以保证正确链接库文件。
 
 #### M4
-　　https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
+　　https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/m4-1.4.19.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/m4-1.4.19
-	patch -Np1 -i ${DOWNLOADDIR}/stack-direction-add-loongarch.patch
+tar xvf ${DOWNLOADDIR}/m4-1.4.20.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/m4-1.4.20
 	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} AUTOMAKE=automake ACLOCAL=aclocal
 	make ${JOBS}
@@ -1426,11 +1428,11 @@ popd
 ```
 
 #### Gettext
-　　https://ftp.gnu.org/gnu/gettext/gettext-0.24.tar.xz
+　　https://ftp.gnu.org/gnu/gettext/gettext-0.25.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gettext-0.24.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gettext-0.24
+tar xvf ${DOWNLOADDIR}/gettext-0.25.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gettext-0.25
 	sed -i "/hello-c++-kde/d" gettext-tools/examples/Makefile.in
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static \
@@ -1549,7 +1551,7 @@ cat > config.cache << "EOF"
 	gt_cv_int_divbyzero_sigfpe=yes
 EOF
 
-	CFLAGS_FOR_BUILD="-std=gnu17" \
+	CFLAGS_FOR_BUILD="-std=gnu17" CFLAGS="-std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --without-bash-malloc \
 	            --with-installed-readline --cache-file=config.cache
@@ -2005,17 +2007,17 @@ popd
 ```
 
 #### CMake
-　　https://cmake.org/files/v4.0/cmake-4.0.1.tar.gz
+　　https://cmake.org/files/v4.0/cmake-4.0.2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/cmake-4.0.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/cmake-4.0.1
+tar xvf ${DOWNLOADDIR}/cmake-4.0.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/cmake-4.0.2
     patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-support-LoongArch32.patch
     mkdir build
     pushd build
         cmake -DCMAKE_CXX_COMPILER="${CROSS_TARGET}-g++" -DCMAKE_C_COMPILER="${CROSS_TARGET}-gcc" \
 	      -DCMAKE_CXX_STANDARD_LIBRARIES="-latomic" \
-              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.0.1 \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.0.2 \
               -DOPENSSL_ROOT_DIR=${SYSDIR}/sysroot/usr -DCMAKE_BUILD_TYPE=Release ../
         sed -i "/P cmake_install.cmake/s@\tbin/cmake@\t/bin/cmake@g" Makefile
         make ${JOBS}
@@ -2076,8 +2078,8 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 #### Python-Setuptools
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.0.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-80.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-80.4.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2088,8 +2090,8 @@ popd
 #### Python-Pip
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/pip-25.1
+tar xvf ${DOWNLOADDIR}/pip-25.1.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pip-25.1.1
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2149,11 +2151,11 @@ popd
 ```
 
 #### Man-DB
-　　https://download.savannah.gnu.org/releases/man-db/man-db-2.13.0.tar.xz
+　　https://download.savannah.gnu.org/releases/man-db/man-db-2.13.1.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/man-db-2.13.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/man-db-2.13.0
+tar xvf ${DOWNLOADDIR}/man-db-2.13.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/man-db-2.13.1
 	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
 	automake --add-missing
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2200,11 +2202,11 @@ popd
 ```
 
 #### SQLite
-　　https://github.com/sqlite/sqlite/archive/version-3.49.1/sqlite-3.49.1.tar.gz
+　　https://github.com/sqlite/sqlite/archive/version-3.49.2/sqlite-3.49.2.tar.gz
 
 ```sh
-unzip ${DOWNLOADDIR}/sqlite-3.49.1.tar.gz -d ${BUILDDIR}
-pushd ${BUILDDIR}/sqlite-3.49.1
+unzip ${DOWNLOADDIR}/sqlite-3.49.2.tar.gz -d ${BUILDDIR}
+pushd ${BUILDDIR}/sqlite-3.49.2
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--enable-fts5 --soname=legacy \
@@ -2544,11 +2546,11 @@ popd
 ```
 
 #### NSS
-　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_110_RTM/src/nss-3.110.tar.gz
+　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_111_RTM/src/nss-3.111.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nss-3.110.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nss-3.110/nss
+tar xvf ${DOWNLOADDIR}/nss-3.111.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nss-3.111/nss
     sed -i "s@ uname -m@ cross-uname -m@g" coreconf/arch.mk
     make CC="gcc" -C coreconf/nsinstall BUILD_OPT=1 \
          CPU_ARCH="loongarch64" CROSS_COMPILE=1 NSS_ENABLE_WERROR=0 OS_TEST="loongarch64" ${JOBS}
@@ -2575,7 +2577,7 @@ pushd ${BUILDDIR}/nss-3.110/nss
             | grep "#define.*PR_VERSION" | awk '{print $3}'),g" \
         > ${SYSDIR}/sysroot/usr/lib32/pkgconfig/nss.pc
 popd
-pushd ${BUILDDIR}/nss-3.110/dist
+pushd ${BUILDDIR}/nss-3.111/dist
     install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
     install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
     install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
@@ -2669,8 +2671,8 @@ popd
 
 #### URI
 ```sh
-tar xvf ${DOWNLOADDIR}/URI-5.31.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/URI-5.31
+tar xvf ${DOWNLOADDIR}/URI-5.32.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/URI-5.32
     ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
     sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile
     sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile
@@ -2696,11 +2698,11 @@ popd
 ```
 
 #### Libgcrypt
-　　https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.11.0.tar.bz2
+　　https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.11.1.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libgcrypt-1.11.0.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/libgcrypt-1.11.0
+tar xvf ${DOWNLOADDIR}/libgcrypt-1.11.1.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libgcrypt-1.11.1
 	CFLAGS="${CFLAGS} -DGPGRT_ENABLE_ES_MACROS" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 		--host=${CROSS_TARGET}
@@ -2713,11 +2715,11 @@ popd
 
 
 #### Libxml2
-　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.2.tar.xz
+　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.3.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libxml2-2.14.2.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libxml2-2.14.2
+tar xvf ${DOWNLOADDIR}/libxml2-2.14.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxml2-2.14.3
 	mkdir cross-build
 	pushd cross-build
 		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2943,11 +2945,11 @@ popd
 　　Mdadm软件包使用CXFLAGS来传递CFLAGS参数，以保证其内部参数传递正确。
 
 #### LVM2
-　　https://sourceware.org/ftp/lvm2/LVM2.2.03.31.tgz
+　　https://sourceware.org/ftp/lvm2/LVM2.2.03.32.tgz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/LVM2.2.03.31.tgz -C ${BUILDDIR}
-pushd ${BUILDDIR}/LVM2.2.03.31
+tar xvf ${DOWNLOADDIR}/LVM2.2.03.32.tgz -C ${BUILDDIR}
+pushd ${BUILDDIR}/LVM2.2.03.32
     ./configure --prefix=/usr --libdir=/usr/lib32 --with-usrlibdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --enable-cmdlib --enable-pkgconfig --enable-udev_sync \
@@ -3022,11 +3024,11 @@ popd
 ```
 
 #### VIM
-　　https://github.com/vim/vim/archive/v9.1.1322/vim-9.1.1322.tar.gz
+　　https://github.com/vim/vim/archive/v9.1.1382/vim-9.1.1382.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/vim-9.1.1322.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/vim-9.1.1322
+tar xvf ${DOWNLOADDIR}/vim-9.1.1382.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vim-9.1.1382
 	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
 cat > src/auto/config.cache << EOF
 	vim_cv_getcwd_broken=no
@@ -3158,11 +3160,11 @@ popd
 ```
 
 #### Libpng
-　　https://sourceforge.net/projects/libpng/files/libpng16/1.6.47/libpng-1.6.47.tar.xz
+　　https://sourceforge.net/projects/libpng/files/libpng16/1.6.48/libpng-1.6.48.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libpng-1.6.47.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libpng-1.6.47
+tar xvf ${DOWNLOADDIR}/libpng-1.6.48.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpng-1.6.48
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
@@ -3356,11 +3358,11 @@ cp -a ${SYSDIR}/sysroot/usr/bin/glib-mkenums ${SYSDIR}/cross-tools/bin/
 ```
 
 #### HarfBuzz
-　　https://github.com/harfbuzz/harfbuzz/releases/download/11.2.0/harfbuzz-11.2.0.tar.xz
+　　https://github.com/harfbuzz/harfbuzz/releases/download/11.2.1/harfbuzz-11.2.1.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.1.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.2.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.2.1
     mkdir cross-build
     pushd cross-build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3396,8 +3398,8 @@ popd
 　　这次编译是加入对Graphite的支持。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.1.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.1.0
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.2.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.2.1
     mkdir cross-build-2
     pushd cross-build-2
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3776,11 +3778,11 @@ popd
 ```
 
 #### HWData
-　　https://github.com/vcrhonek/hwdata/archive/v0.394/hwdata-0.394.tar.gz
+　　https://github.com/vcrhonek/hwdata/archive/v0.395/hwdata-0.395.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/hwdata-0.394.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/hwdata-0.394
+tar xvf ${DOWNLOADDIR}/hwdata-0.395.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/hwdata-0.395
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
@@ -3877,8 +3879,9 @@ popd
 #### LLVM
 
 ```sh
-tar xvf ${DOWNLOADDIR}/llvm-project-20.1.3.src.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
+pushd ${BUILDDIR}
+git clone https://github.com/heiher/llvm-project.git --depth 1 -b la32
+pushd llvm-project
     mkdir cross-build
     pushd cross-build
         CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
@@ -3893,11 +3896,49 @@ pushd ${BUILDDIR}/llvm-project-20.1.3.src/llvm
               -DLLVM_LINK_LLVM_DYLIB:BOOL=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT:BOOL=ON \
               -DLLVM_INSTALL_TOOLCHAIN_ONLY:BOOL=OFF \
 	      -DLLVM_VERSION_SUFFIX='' \
+	      -DLLVM_ENABLE_PROJECTS='llvm;clang;lld' \
+	      -DCLANG_DEFAULT_LINKER=lld \
 	      -DLLVM_HOST_TRIPLE=${CROSS_TARGET} \
               -DLLVM_DEFAULT_TARGET_TRIPLE=${CROSS_TARGET}
         ninja
         DESTDIR=${SYSDIR}/sysroot ninja install
     popd
+popd
+rm -rf llvm-project
+popd
+```
+
+#### LLVM Runtimes
+
+```sh
+pushd ${BUILDDIR}
+git clone https://github.com/heiher/llvm-project.git --depth 1 -b la32
+pushd llvm-project
+    pushd compiler-rt
+        mkdir cross-build
+        pushd cross-build
+            CC="clang" CXX="clang++" \
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+                  -DLLVM_CONFIG=${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-llvm-config \
+                  -DLLVM_LIBDIR_SUFFIX=32 \
+                  -DCMAKE_AR="${SYSDIR}/cross-tools/bin/llvm-ar" \
+                  -DCMAKE_RANLIB="${SYSDIR}/cross-tools/bin/llvm-ranlib" \
+                  -DCMAKE_C_FLAGS="-DNDEBUG -target ${CROSS_TARGET}" \
+                  -DCMAKE_CXX_FLAGS="-DNDEBUG -target ${CROSS_TARGET}" \
+                  -DCMAKE_ASM_FLAGS="-target ${CROSS_TARGET}" \
+                  -DCMAKE_MAKE_PROGRAM:PATH=${SYSDIR}/cross-tools/bin/ninja \
+                  -DPython3_EXECUTABLE=${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3 \
+                  -DCMAKE_SYSROOT=${SYSDIR}/sysroot \
+                  -DCMAKE_FIND_ROOT_PATH=${SYSDIR}/sysroot/usr \
+                  -DLLVM_USE_SANITIZER:BOOL=ON \
+                  -DLLVM_LINK_LLVM_DYLIB:BOOL=ON \
+                  -DLLVM_HOST_TRIPLE=${CROSS_TARGET}
+            ninja
+            DESTDIR=${SYSDIR}/sysroot ninja install
+        popd
+    popd
+popd
+rm -rf llvm-project
 popd
 ```
 
