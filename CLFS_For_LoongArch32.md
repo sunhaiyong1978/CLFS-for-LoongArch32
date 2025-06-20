@@ -363,13 +363,13 @@ popd
 
 
 ### 3.7 Automake
-　　https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz
+　　https://ftp.gnu.org/gnu/automake/automake-1.18.tar.xz
 
 　　Automake软件包中提供了许多软件包集成用来生成Makefile文件的脚本，制作步骤如下：
 
 ```sh
-tar xvf ${DOWNLOADDIR}/automake-1.17.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/automake-1.17
+tar xvf ${DOWNLOADDIR}/automake-1.18.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/automake-1.18
 	./configure --prefix=${SYSDIR}/cross-tools
 	make ${JOBS}
 	make install
@@ -586,13 +586,13 @@ popd
 ```
 
 ### 3.19 Setuptools
-　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.4.0.tar.gz
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-80.9.0.tar.gz
 
 　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-80.4.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.9.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.9.0
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         ${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -642,8 +642,8 @@ popd
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/setuptools-80.4.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.9.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/setuptools-80.9.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 popd
@@ -672,13 +672,13 @@ popd
 ```
 
 ### 3.26 Meson
-　　https://github.com/mesonbuild/meson/archive/1.8.0/meson-1.8.0.tar.gz
+　　https://github.com/mesonbuild/meson/archive/1.8.1/meson-1.8.1.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.8.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.8.0
+tar xvf ${DOWNLOADDIR}/meson-1.8.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.8.1
 	${SYSDIR}/cross-tools/bin/python3 setup.py build
 	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -803,11 +803,11 @@ chmod +x ${SYSDIR}/cross-tools/bin/qemu-loongarch32{,-ldd}
 　　上面步骤中创建了两个脚本命令qemu-loongarch32和qemu-loongarch32-ldd，前者可以执行目标系统中的二进制程序，后者可以查看目标系统的二进制程序或库文件需要的动态链接库。
 
 ### 3.33 Glib
-　　https://download.gnome.org/sources/glib/2.84/glib-2.84.1.tar.xz
+　　https://download.gnome.org/sources/glib/2.85/glib-2.85.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/glib-2.84.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/glib-2.84.1
+tar xvf ${DOWNLOADDIR}/glib-2.85.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/glib-2.85.0
     mkdir native-build
     pushd native-build
         meson --prefix=${SYSDIR}/cross-tools --libdir=${SYSDIR}/cross-tools/lib64 \
@@ -900,10 +900,10 @@ automake --add-missing
 　　2.直接替换文件，具体的操作方式为：
 
 ```sh
-cp ${SYSDIR}/sysroot/usr/share/automake-1.17/config.* config/
+cp ${SYSDIR}/sysroot/usr/share/automake-1.18/config.* config/
 ```
 
-　　如果使用automake命令无法解决，可以直接复制Automake软件包安装的脚本文件，以我们安装的Automake-1.17版本为例，从${SYSDIR}/sysroot/usr/share/automake-1.17/中复制config开头的文件覆盖当前要编译的软件包中的同名文件即可，这里假定需要覆盖的文件在config目录中，也可能是在其它目录，可根据需要进行覆盖。
+　　如果使用automake命令无法解决，可以直接复制Automake软件包安装的脚本文件，以我们安装的Automake-1.17版本为例，从${SYSDIR}/sysroot/usr/share/automake-1.18/中复制config开头的文件覆盖当前要编译的软件包中的同名文件即可，这里假定需要覆盖的文件在config目录中，也可能是在其它目录，可根据需要进行覆盖。
 
 　　也可能一个软件包中有多个探测脚本，那么就需要全部进行覆盖。
 
@@ -1014,11 +1014,11 @@ popd
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20250505/iana-etc-20250505.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20250519/iana-etc-20250519.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20250505.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20250505
+tar xvf ${DOWNLOADDIR}/iana-etc-20250519.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20250519
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -1457,7 +1457,7 @@ popd
 ```
 
 #### TCL
-　　https://sourceforge.net/projects/tcl/files/Tcl//8.6.14//tcl8.6.14-src.tar.gz
+　　https://sourceforge.net/projects/tcl/files/Tcl/8.6.14/tcl8.6.14-src.tar.gz
 
 ```sh
 tar xvf ${DOWNLOADDIR}/tcl8.6.14-src.tar.gz -C ${BUILDDIR}
@@ -1664,11 +1664,10 @@ popd
 ```
 
 #### Automake
-　　https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/automake-1.17.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/automake-1.17
+tar xvf ${DOWNLOADDIR}/automake-1.18.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/automake-1.18
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
@@ -1850,11 +1849,11 @@ popd
 ```
 
 #### Less
-　　https://www.greenwoodsoftware.com/less/less-668.tar.gz
+　　https://www.greenwoodsoftware.com/less/less-678.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/less-688.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/less-688
+tar xvf ${DOWNLOADDIR}/less-678.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/less-678
 	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
@@ -1876,11 +1875,11 @@ popd
 ```
 
 #### Iproute2
-　　https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.14.0.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.15.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iproute2-6.14.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iproute2-6.14.0
+tar xvf ${DOWNLOADDIR}/iproute2-6.15.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iproute2-6.15.0
 	sed -i /ARPD/d Makefile
 	rm -fv man/man8/arpd.8
 	PKG_CONFIG=${CROSS_TARGET}-pkg-config \
@@ -1978,11 +1977,11 @@ popd
 ```
 
 #### Curl
-　　https://curl.se/download/curl-8.13.0.tar.xz
+　　https://curl.se/download/curl-8.14.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/curl-8.13.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/curl-8.13.0
+tar xvf ${DOWNLOADDIR}/curl-8.14.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/curl-8.14.0
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
                 --host=${CROSS_TARGET} --with-openssl \
                 --enable-threaded-resolver --with-ca-path=/etc/ssl/certs
@@ -2078,8 +2077,8 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 #### Python-Setuptools
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-80.4.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-80.4.0
+tar xvf ${DOWNLOADDIR}/setuptools-80.9.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-80.9.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2229,7 +2228,7 @@ popd
 ```sh
 tar xvf ${DOWNLOADDIR}/util-linux-2.41.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/util-linux-2.41
-	cp ${SYSDIR}/sysroot/usr/share/automake-1.16/config.* config/
+	cp ${SYSDIR}/sysroot/usr/share/automake-1.18/config.* config/
 	./configure  --build=${CROSS_HOST} --host=${CROSS_TARGET} \
         ADJTIME_PATH=/var/lib/hwclock/adjtime \
         --libdir=/usr/lib32 \
@@ -2350,11 +2349,11 @@ sed -i "s@=/usr@=${SYSDIR}/sysroot/usr@g" ${SYSDIR}/cross-tools/bin/mk_cmds
 ```
 
 #### OpenSSH
-　　https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.0p1.tar.gz
+　　https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.0p2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/openssh-10.0p1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/openssh-10.0p1
+tar xvf ${DOWNLOADDIR}/openssh-10.0p2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssh-10.0p2
 	rm config.{sub,guess}
 	automake --add-missing
 	./configure --prefix=/usr  --libdir=/usr/lib32 --sysconfdir=/etc/ssh \
@@ -2453,11 +2452,11 @@ popd
 ```
 
 #### DHCPCD
-　　https://github.com/NetworkConfiguration/dhcpcd/archive/v10.2.2/dhcpcd-10.2.2.tar.gz
+　　https://github.com/NetworkConfiguration/dhcpcd/archive/v10.2.3/dhcpcd-10.2.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/dhcpcd-10.2.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/dhcpcd-10.2.2
+tar xvf ${DOWNLOADDIR}/dhcpcd-10.2.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dhcpcd-10.2.3
 	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-privsep
 	make ${JOBS}
@@ -2546,11 +2545,11 @@ popd
 ```
 
 #### NSS
-　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_111_RTM/src/nss-3.111.tar.gz
+　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_112_RTM/src/nss-3.112.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nss-3.111.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nss-3.111/nss
+tar xvf ${DOWNLOADDIR}/nss-3.112.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nss-3.112/nss
     sed -i "s@ uname -m@ cross-uname -m@g" coreconf/arch.mk
     make CC="gcc" -C coreconf/nsinstall BUILD_OPT=1 \
          CPU_ARCH="loongarch64" CROSS_COMPILE=1 NSS_ENABLE_WERROR=0 OS_TEST="loongarch64" ${JOBS}
@@ -2577,7 +2576,7 @@ pushd ${BUILDDIR}/nss-3.111/nss
             | grep "#define.*PR_VERSION" | awk '{print $3}'),g" \
         > ${SYSDIR}/sysroot/usr/lib32/pkgconfig/nss.pc
 popd
-pushd ${BUILDDIR}/nss-3.111/dist
+pushd ${BUILDDIR}/nss-3.112/dist
     install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
     install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
     install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
@@ -2611,8 +2610,8 @@ popd
 #### Meson
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.8.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.8.0
+tar xvf ${DOWNLOADDIR}/meson-1.8.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.8.1
     ${SYSDIR}/cross-tools/bin/python3 setup.py build
     ${SYSDIR}/cross-tools/bin/python3 setup.py install --root=${SYSDIR}/sysroot --prefix=/usr
     sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/meson
@@ -2820,11 +2819,11 @@ popd
 ```
 
 #### Doxygen
-　　https://www.doxygen.nl/files/doxygen-1.13.2.src.tar.gz
+　　https://www.doxygen.nl/files/doxygen-1.14.0.src.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/doxygen-1.13.2.src.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/doxygen-1.13.2
+tar xvf ${DOWNLOADDIR}/doxygen-1.14.0.src.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/doxygen-1.14.0
 	mkdir build
 	pushd build
 		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
@@ -2894,11 +2893,11 @@ popd
 ```
 
 #### Userspace-RCU
-　　https://lttng.org/files/urcu/userspace-rcu-0.15.2.tar.bz2
+　　https://lttng.org/files/urcu/userspace-rcu-0.15.3.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/userspace-rcu-0.15.2.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/userspace-rcu-0.15.2
+tar xvf ${DOWNLOADDIR}/userspace-rcu-0.15.3.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/userspace-rcu-0.15.3
     ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} --host=${CROSS_TARGET}
     make ${JOBS}
     make DESTDIR=${SYSDIR}/sysroot install
@@ -3008,8 +3007,8 @@ popd
 #### Glib
 
 ```sh
-tar xvf ${DOWNLOADDIR}/glib-2.84.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/glib-2.84.1
+tar xvf ${DOWNLOADDIR}/glib-2.85.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/glib-2.85.0
     mkdir build
     pushd build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3333,8 +3332,8 @@ popd
 　　再次编译Glib的目的是为了增加对Gobject-Introspection的支持。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/glib-2.84.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/glib-2.84.1
+tar xvf ${DOWNLOADDIR}/glib-2.85.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/glib-2.85.0
     mkdir build
     pushd build
         meson --prefix=/usr --libdir=/usr/lib32 \
