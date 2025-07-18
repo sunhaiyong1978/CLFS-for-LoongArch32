@@ -1014,11 +1014,11 @@ popd
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20250618/iana-etc-20250618.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20250711/iana-etc-20250711.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20250618.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20250618
+tar xvf ${DOWNLOADDIR}/iana-etc-20250711.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20250711
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -1250,11 +1250,11 @@ sed -i "s@-L\$libdir@@g" ${SYSDIR}/cross-tools/bin/ncursesw6-config
 
 
 #### Readline
-　　https://ftp.gnu.org/gnu/readline/readline-8.2.13.tar.gz
+　　https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/readline-8.2.13.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/readline-8.2.13
+tar xvf ${DOWNLOADDIR}/readline-8.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/readline-8.3
 	sed -i '/MV.*old/d' Makefile.in
 	sed -i '/{OLDSUFF}/c:' support/shlib-install
 	rm support/config.{sub,guess}
@@ -1428,11 +1428,11 @@ popd
 ```
 
 #### Gettext
-　　https://ftp.gnu.org/gnu/gettext/gettext-0.25.tar.xz
+　　https://ftp.gnu.org/gnu/gettext/gettext-0.25.1.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gettext-0.25.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gettext-0.25
+tar xvf ${DOWNLOADDIR}/gettext-0.25.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gettext-0.25.1
 	sed -i "/hello-c++-kde/d" gettext-tools/examples/Makefile.in
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static \
@@ -1531,11 +1531,11 @@ popd
 ```
 
 #### Bash
-　　https://ftp.gnu.org/gnu/bash/bash-5.2.37.tar.gz
+　　https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/bash-5.2.37.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/bash-5.2.37
+tar xvf ${DOWNLOADDIR}/bash-5.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/bash-5.3
 cat > config.cache << "EOF"
 	ac_cv_func_mmap_fixed_mapped=yes
 	ac_cv_func_strcoll_works=yes
@@ -1739,11 +1739,11 @@ popd
 ```
 
 #### OpenSSL
-　　https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
+　　https://github.com/openssl/openssl/releases/download/openssl-3.5.1/openssl-3.5.1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/openssl-3.5.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/openssl-3.5.0
+tar xvf ${DOWNLOADDIR}/openssl-3.5.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssl-3.5.1
 	CC="${CROSS_TARGET}-gcc" \
 	./Configure --prefix=/usr --openssldir=/etc/ssl \
 				--libdir=lib32 shared zlib linux-generic32
@@ -1977,11 +1977,11 @@ popd
 ```
 
 #### Curl
-　　https://curl.se/download/curl-8.14.1.tar.xz
+　　https://curl.se/download/curl-8.15.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/curl-8.14.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/curl-8.14.1
+tar xvf ${DOWNLOADDIR}/curl-8.15.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/curl-8.15.0
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
                 --host=${CROSS_TARGET} --with-openssl \
                 --enable-threaded-resolver --with-ca-path=/etc/ssl/certs
@@ -2201,11 +2201,11 @@ popd
 ```
 
 #### SQLite
-　　https://github.com/sqlite/sqlite/archive/version-3.50.2/sqlite-3.50.2.tar.gz
+　　https://github.com/sqlite/sqlite/archive/version-3.50.3/sqlite-3.50.3.tar.gz
 
 ```sh
-unzip ${DOWNLOADDIR}/sqlite-3.50.2.tar.gz -d ${BUILDDIR}
-pushd ${BUILDDIR}/sqlite-3.50.2
+unzip ${DOWNLOADDIR}/sqlite-3.50.3.tar.gz -d ${BUILDDIR}
+pushd ${BUILDDIR}/sqlite-3.50.3
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--enable-fts5 --soname=legacy \
@@ -2327,11 +2327,11 @@ popd
 　　Procps-ng软件包也是在交叉编译方式上会出现参数判断错误的情况，需要在配置阶段指定参数和取值。
 
 #### E2fsprogs
-　　https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v1.47.2/e2fsprogs-1.47.2.tar.gz
+　　https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v1.47.3/e2fsprogs-1.47.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/e2fsprogs-1.47.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/e2fsprogs-1.47.2
+tar xvf ${DOWNLOADDIR}/e2fsprogs-1.47.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/e2fsprogs-1.47.3
 	mkdir -v build
 	pushd build
 		CFLAGS="${CFLAGS} -std=gnu17" \
@@ -2528,11 +2528,11 @@ sed -i "/wheel ALL=(ALL:ALL) ALL/s@# @@g" ${SYSDIR}/sysroot/etc/sudoers.dist
 ```
 
 #### NSPR
-　　https://archive.mozilla.org/pub/nspr/releases/v4.36/src/nspr-4.36.tar.gz
+　　https://archive.mozilla.org/pub/nspr/releases/v4.37/src/nspr-4.37.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nspr-4.36.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nspr-4.36/nspr
+tar xvf ${DOWNLOADDIR}/nspr-4.37.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nspr-4.37/nspr
     patch -Np2 -i ${DOWNLOADDIR}/0001-nspr-add-loongarch32-support.patch
     cp ${SYSDIR}/cross-tools/share/automake-*/config.* build/autoconf/
     ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2545,11 +2545,11 @@ popd
 ```
 
 #### NSS
-　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_113_RTM/src/nss-3.113.tar.gz
+　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_114_RTM/src/nss-3.114.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nss-3.113.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nss-3.113/nss
+tar xvf ${DOWNLOADDIR}/nss-3.114.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nss-3.114/nss
     sed -i "s@ uname -m@ cross-uname -m@g" coreconf/arch.mk
     make CC="gcc" -C coreconf/nsinstall BUILD_OPT=1 \
          CPU_ARCH="loongarch64" CROSS_COMPILE=1 NSS_ENABLE_WERROR=0 OS_TEST="loongarch64" ${JOBS}
@@ -2576,7 +2576,7 @@ pushd ${BUILDDIR}/nss-3.113/nss
             | grep "#define.*PR_VERSION" | awk '{print $3}'),g" \
         > ${SYSDIR}/sysroot/usr/lib32/pkgconfig/nss.pc
 popd
-pushd ${BUILDDIR}/nss-3.113/dist
+pushd ${BUILDDIR}/nss-3.114/dist
     install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
     install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
     install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
@@ -2619,11 +2619,11 @@ popd
 ```
 
 #### Ninja
-　　https://github.com/ninja-build/ninja/archive/v1.13.0/ninja-1.13.0.tar.gz
+　　https://github.com/ninja-build/ninja/archive/v1.13.1/ninja-1.13.1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/ninja-1.13.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/ninja-1.13.0
+tar xvf ${DOWNLOADDIR}/ninja-1.13.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/ninja-1.13.1
     CXX="${CROSS_TARGET}-g++" AR="${CROSS_TARGET}-ar" \
     ${SYSDIR}/cross-tools/bin/python3 configure.py
     ninja
@@ -2714,11 +2714,11 @@ popd
 
 
 #### Libxml2
-　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.4.tar.xz
+　　https://download.gnome.org/sources/libxml2/2.14/libxml2-2.14.5.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libxml2-2.14.4.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libxml2-2.14.4
+tar xvf ${DOWNLOADDIR}/libxml2-2.14.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libxml2-2.14.5
 	mkdir cross-build
 	pushd cross-build
 		../configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2836,11 +2836,11 @@ popd
 ```
 
 #### Git
-　　https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.50.0.tar.xz
+　　https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.50.1.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/git-2.50.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/git-2.50.0
+tar xvf ${DOWNLOADDIR}/git-2.50.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/git-2.50.1
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--with-gitconfig=/etc/gitconfig --with-python=python3 --without-iconv \
 		ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=no
@@ -3023,11 +3023,11 @@ popd
 ```
 
 #### VIM
-　　https://github.com/vim/vim/archive/v9.1.1382/vim-9.1.1382.tar.gz
+　　https://github.com/vim/vim/archive/v9.1.1533/vim-9.1.1533.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/vim-9.1.1382.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/vim-9.1.1382
+tar xvf ${DOWNLOADDIR}/vim-9.1.1533.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/vim-9.1.1533
 	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
 cat > src/auto/config.cache << EOF
 	vim_cv_getcwd_broken=no
@@ -3159,11 +3159,11 @@ popd
 ```
 
 #### Libpng
-　　https://sourceforge.net/projects/libpng/files/libpng16/1.6.49/libpng-1.6.49.tar.xz
+　　https://sourceforge.net/projects/libpng/files/libpng16/1.6.50/libpng-1.6.50.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libpng-1.6.49.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libpng-1.6.49
+tar xvf ${DOWNLOADDIR}/libpng-1.6.50.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpng-1.6.50
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
@@ -3558,11 +3558,11 @@ popd
 ```
 
 #### GnuTLS
-　　https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.9.tar.xz
+　　https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.10.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gnutls-3.8.9.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gnutls-3.8.9
+tar xvf ${DOWNLOADDIR}/gnutls-3.8.10.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gnutls-3.8.10
     ./configure --prefix=/usr --libdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --enable-openssl-compatibility --enable-ssl3-support \
@@ -3777,11 +3777,11 @@ popd
 ```
 
 #### HWData
-　　https://github.com/vcrhonek/hwdata/archive/v0.396/hwdata-0.396.tar.gz
+　　https://github.com/vcrhonek/hwdata/archive/v0.397/hwdata-0.397.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/hwdata-0.396.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/hwdata-0.396
+tar xvf ${DOWNLOADDIR}/hwdata-0.397.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/hwdata-0.397
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
