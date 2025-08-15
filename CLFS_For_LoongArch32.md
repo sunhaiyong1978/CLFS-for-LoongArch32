@@ -562,11 +562,11 @@ popd
 ```
 
 ### 3.18 Python3
-　　https://www.python.org/ftp/python/3.13.5/Python-3.13.5.tar.xz
+　　https://www.python.org/ftp/python/3.13.7/Python-3.13.7.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/Python-3.13.5.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/Python-3.13.5
+tar xvf ${DOWNLOADDIR}/Python-3.13.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.13.7
 	CFLAGS="${CFLAGS} -fPIC"
 	./configure --prefix=${SYSDIR}/cross-tools --with-platlibdir=lib32 \
 	            --disable-shared --with-system-expat --with-system-ffi \
@@ -601,13 +601,13 @@ popd
 
 
 ### 3.20 Pip
-　　https://github.com/pypa/pip/archive/25.1.1/pip-25.1.1.tar.gz
+　　https://github.com/pypa/pip/archive/25.2/pip-25.2.tar.gz
 
 　　pip软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.1.1.tar.gz -C ${BUILD_DIRECTORY}
-pushd ${BUILD_DIRECTORY}/pip-25.1.1
+tar xvf ${DOWNLOADDIR}/pip-25.2.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/pip-25.2
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user pip
 popd
@@ -671,20 +671,32 @@ pushd ${BUILD_DIRECTORY}/jinja2-3.1.6
 popd
 ```
 
-### 3.26 Meson
-　　https://github.com/mesonbuild/meson/archive/1.8.2/meson-1.8.2.tar.gz
+### 3.26 Distlib
+　　https://files.pythonhosted.org/packages/source/d/distlib/distlib-0.4.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/distlib-0.4.0.tar.gz -C ${BUILD_DIRECTORY}
+pushd ${BUILD_DIRECTORY}/distlib-0.4.0
+	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
+	${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user distlib
+popd
+```
+
+
+### 3.27 Meson
+　　https://github.com/mesonbuild/meson/archive/1.8.3/meson-1.8.3.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.8.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.8.2
+tar xvf ${DOWNLOADDIR}/meson-1.8.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.8.3
 	${SYSDIR}/cross-tools/bin/python3 setup.py build
 	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
 ```
 
-### 3.27 Pkg-Config
+### 3.28 Pkg-Config
 　　https://distfiles.dereferenced.org/pkgconf/pkgconf-2.5.1.tar.xz
 
 　　为了能在交叉编译目标系统的过程中使用目标系统中已经安装的“pc”文件，我们在交叉工具链的目录中安装一个专门用来从目标系统目录中的查询“pc”文件的pkg-config命令，制作过程如下：
@@ -700,7 +712,7 @@ pushd ${BUILDDIR}/pkgconf-2.5.1
 popd
 ```
 
-### 3.28 Groff
+### 3.29 Groff
 　　https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz
 
 　　编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
@@ -714,7 +726,7 @@ pushd ${BUILDDIR}/groff-1.23.0
 popd
 ```
 
-### 3.29 Guile
+### 3.30 Guile
 　　https://ftp.gnu.org/gnu/guile/guile-3.0.10.tar.xz
 
 　　编译目标系统的过程中会需要用到Guile软件包提供的工具，在交叉工具链的目录中安装一个版本较新的Guile。
@@ -728,7 +740,7 @@ pushd ${BUILDDIR}/guile-3.0.10
 popd
 ```
 
-### 3.30 Make
+### 3.31 Make
 　　https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
 
 ```sh
@@ -740,7 +752,7 @@ pushd ${BUILDDIR}/make-4.4.1
 popd
 ```
 
-### 3.31 LLVM
+### 3.32 LLVM
 
 ```sh
 pushd ${BUILDDIR}
@@ -772,7 +784,7 @@ rm -rf llvm-project
 popd
 ```
 
-### 3.32 QEMU
+### 3.33 QEMU
 
 ```sh
 pushd ${BUILDDIR}
@@ -802,7 +814,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/qemu-loongarch32{,-ldd}
 ```
 　　上面步骤中创建了两个脚本命令qemu-loongarch32和qemu-loongarch32-ldd，前者可以执行目标系统中的二进制程序，后者可以查看目标系统的二进制程序或库文件需要的动态链接库。
 
-### 3.33 Glib
+### 3.34 Glib
 　　https://download.gnome.org/sources/glib/2.85/glib-2.85.0.tar.xz
 
 ```sh
@@ -819,7 +831,7 @@ pushd ${BUILDDIR}/glib-2.85.0
 popd
 ```
 
-### 3.34 Gobject-Introspection
+### 3.35 Gobject-Introspection
 　　https://download.gnome.org/sources/gobject-introspection/1.84/gobject-introspection-1.84.0.tar.xz
 
 ```sh
@@ -855,7 +867,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-g-ir-compiler
 ```
 　　为了在给目标系统中的一些软件正确生成对应的gir文件，我们在交叉编译目录中增加脚本命令来完成这个目标。
 
-### 3.35 Vala
+### 3.36 Vala
 　　https://download.gnome.org/sources/vala/0.56/vala-0.56.18.tar.xz
 
 ```sh
@@ -1003,22 +1015,22 @@ EOF
 ### 4.2 软件包的制作
 
 #### Man-Pages
-　　https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/man-pages-6.14.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/man-pages-6.15.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/man-pages-6.14.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/man-pages-6.14
+tar xvf ${DOWNLOADDIR}/man-pages-6.15.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/man-pages-6.15
 	make prefix=/usr DESTDIR=${SYSDIR}/sysroot install -R
 popd
 ```
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20250711/iana-etc-20250711.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20250807/iana-etc-20250807.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20250711.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20250711
+tar xvf ${DOWNLOADDIR}/iana-etc-20250807.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20250807
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -1282,11 +1294,11 @@ popd
 ```
 
 #### BC
-　　https://github.com/gavinhoward/bc/archive/7.0.3/bc-7.0.3.tar.gz
+　　https://github.com/gavinhoward/bc/archive/7.1.0/bc-7.1.0.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/bc-7.0.3.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/bc-7.0.3
+tar xvf ${DOWNLOADDIR}/bc-7.1.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/bc-7.1.0
 	CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" CFLAGS="${CFLAGS} -std=gnu17" ./configure --prefix=/usr
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
@@ -1428,11 +1440,11 @@ popd
 ```
 
 #### Gettext
-　　https://ftp.gnu.org/gnu/gettext/gettext-0.25.1.tar.xz
+　　https://ftp.gnu.org/gnu/gettext/gettext-0.26.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gettext-0.25.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gettext-0.25.1
+tar xvf ${DOWNLOADDIR}/gettext-0.26.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gettext-0.26
 	sed -i "/hello-c++-kde/d" gettext-tools/examples/Makefile.in
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static \
@@ -1599,11 +1611,11 @@ sed -i -e "s@${SYSDIR}/cross-tools/${CROSS_TARGET}@/usr@g" \
 　　交叉编译生成的libtool文件中包含了大量的在交叉编译中使用的路径，因此在目标系统中使用libtool会存在路径不对的问题，我们通过sed命令将这些交叉编译环境中的路径转换成目标系统实际的路径。
 
 #### GDBM
-　　https://ftp.gnu.org/gnu/gdbm/gdbm-1.25.tar.gz
+　　https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gdbm-1.25.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gdbm-1.25
+tar xvf ${DOWNLOADDIR}/gdbm-1.26.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gdbm-1.26
 	CFLAGS="${CFLAGS} -std=gnu17" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --enable-libgdbm-compat
@@ -1739,11 +1751,11 @@ popd
 ```
 
 #### OpenSSL
-　　https://github.com/openssl/openssl/releases/download/openssl-3.5.1/openssl-3.5.1.tar.gz
+　　https://github.com/openssl/openssl/releases/download/openssl-3.5.2/openssl-3.5.2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/openssl-3.5.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/openssl-3.5.1
+tar xvf ${DOWNLOADDIR}/openssl-3.5.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssl-3.5.2
 	CC="${CROSS_TARGET}-gcc" \
 	./Configure --prefix=/usr --openssldir=/etc/ssl \
 				--libdir=lib32 shared zlib linux-generic32
@@ -1875,11 +1887,11 @@ popd
 ```
 
 #### Iproute2
-　　https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.15.0.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.16.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iproute2-6.15.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iproute2-6.15.0
+tar xvf ${DOWNLOADDIR}/iproute2-6.16.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iproute2-6.16.0
 	sed -i /ARPD/d Makefile
 	rm -fv man/man8/arpd.8
 	PKG_CONFIG=${CROSS_TARGET}-pkg-config \
@@ -2006,17 +2018,17 @@ popd
 ```
 
 #### CMake
-　　https://cmake.org/files/v4.0/cmake-4.0.3.tar.gz
+　　https://cmake.org/files/v4.1/cmake-4.1.0.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/cmake-4.0.3.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/cmake-4.0.3
+tar xvf ${DOWNLOADDIR}/cmake-4.1.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/cmake-4.1.0
     patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-support-LoongArch32.patch
     mkdir build
     pushd build
         cmake -DCMAKE_CXX_COMPILER="${CROSS_TARGET}-g++" -DCMAKE_C_COMPILER="${CROSS_TARGET}-gcc" \
 	      -DCMAKE_CXX_STANDARD_LIBRARIES="-latomic" \
-              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.0.3 \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.1.0 \
               -DOPENSSL_ROOT_DIR=${SYSDIR}/sysroot/usr -DCMAKE_BUILD_TYPE=Release ../
         sed -i "/P cmake_install.cmake/s@\tbin/cmake@\t/bin/cmake@g" Makefile
         make ${JOBS}
@@ -2028,8 +2040,8 @@ popd
 #### Python3
 
 ```sh
-tar xvf ${DOWNLOADDIR}/Python-3.13.5.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/Python-3.13.5
+tar xvf ${DOWNLOADDIR}/Python-3.13.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.13.7
 	patch -Np1 -i ${DOWNLOADDIR}/0001-Python-3.13.1-fix-for-cross-build.patch
 cat > config.cache << "EOF"
     ac_cv_aligned_required=no
@@ -2089,8 +2101,8 @@ popd
 #### Python-Pip
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pip-25.1.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/pip-25.1.1
+tar xvf ${DOWNLOADDIR}/pip-25.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pip-25.2
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2201,11 +2213,11 @@ popd
 ```
 
 #### SQLite
-　　https://github.com/sqlite/sqlite/archive/version-3.50.3/sqlite-3.50.3.tar.gz
+　　https://github.com/sqlite/sqlite/archive/version-3.50.4/sqlite-3.50.4.tar.gz
 
 ```sh
-unzip ${DOWNLOADDIR}/sqlite-3.50.3.tar.gz -d ${BUILDDIR}
-pushd ${BUILDDIR}/sqlite-3.50.3
+unzip ${DOWNLOADDIR}/sqlite-3.50.4.tar.gz -d ${BUILDDIR}
+pushd ${BUILDDIR}/sqlite-3.50.4
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--enable-fts5 --soname=legacy \
@@ -2248,12 +2260,12 @@ popd
 　　Util-Linux带有大量的命令和库，由于部分命令已经在其它软件包中提供了，所以使用选项参数来关闭这些命令的编译和安装。
 
 #### Systemd
-　　https://github.com/systemd/systemd/archive/v257.7/systemd-257.7.tar.gz
+　　https://github.com/systemd/systemd/archive/v257.8/systemd-257.8.tar.gz
 　　Systemd采用的是meson命令进行配置阶段的操作，meson与其他常见的configure脚本配置有明显的不同，在当前需要进行交叉编译的情况下要采用特定的配置操作步骤，以下将展开进行说明。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/systemd-257.7.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/systemd-257.7
+tar xvf ${DOWNLOADDIR}/systemd-257.8.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/systemd-257.8
 	patch -Np1 -i ${DOWNLOADDIR}/0001-systemd-257-add-loongarch32-support.patch
 	pushd src/basic
         python3 missing_syscalls.py missing_syscall_def.h $(ls syscalls-*.txt)
@@ -2510,11 +2522,11 @@ popd
 ```
 
 #### Sudo
-　　https://www.sudo.ws/dist/sudo-1.9.17p1.tar.gz
+　　https://www.sudo.ws/dist/sudo-1.9.17p2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/sudo-1.9.17p1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/sudo-1.9.17p1
+tar xvf ${DOWNLOADDIR}/sudo-1.9.17p2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/sudo-1.9.17p2
 	./configure --prefix=/usr --libexecdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--with-secure-path --with-all-insults --with-env-editor \
@@ -2545,11 +2557,11 @@ popd
 ```
 
 #### NSS
-　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_114_RTM/src/nss-3.114.tar.gz
+　　https://archive.mozilla.org/pub/security/nss/releases/NSS_3_115_RTM/src/nss-3.115.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nss-3.114.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nss-3.114/nss
+tar xvf ${DOWNLOADDIR}/nss-3.115.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nss-3.115/nss
     sed -i "s@ uname -m@ cross-uname -m@g" coreconf/arch.mk
     make CC="gcc" -C coreconf/nsinstall BUILD_OPT=1 \
          CPU_ARCH="loongarch64" CROSS_COMPILE=1 NSS_ENABLE_WERROR=0 OS_TEST="loongarch64" ${JOBS}
@@ -2576,7 +2588,7 @@ pushd ${BUILDDIR}/nss-3.114/nss
             | grep "#define.*PR_VERSION" | awk '{print $3}'),g" \
         > ${SYSDIR}/sysroot/usr/lib32/pkgconfig/nss.pc
 popd
-pushd ${BUILDDIR}/nss-3.114/dist
+pushd ${BUILDDIR}/nss-3.115/dist
     install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
     install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
     install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
@@ -2697,11 +2709,11 @@ popd
 ```
 
 #### Libgcrypt
-　　https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.11.1.tar.bz2
+　　https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.11.2.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libgcrypt-1.11.1.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/libgcrypt-1.11.1
+tar xvf ${DOWNLOADDIR}/libgcrypt-1.11.2.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libgcrypt-1.11.2
 	CFLAGS="${CFLAGS} -DGPGRT_ENABLE_ES_MACROS" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 		--host=${CROSS_TARGET}
@@ -2864,11 +2876,11 @@ popd
 ```
 
 #### Inih
-　　https://github.com/benhoyt/inih/archive/r60/inih-r60.tar.gz
+　　https://github.com/benhoyt/inih/archive/r61/inih-r61.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/inih-r60.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/inih-r60
+tar xvf ${DOWNLOADDIR}/inih-r61.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/inih-r61
 	mkdir build
 	pushd build
 		meson --prefix=/usr --libdir=/usr/lib32 \
@@ -2944,11 +2956,11 @@ popd
 　　Mdadm软件包使用CXFLAGS来传递CFLAGS参数，以保证其内部参数传递正确。
 
 #### LVM2
-　　https://sourceware.org/ftp/lvm2/LVM2.2.03.33.tgz
+　　https://sourceware.org/ftp/lvm2/LVM2.2.03.34.tgz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/LVM2.2.03.33.tgz -C ${BUILDDIR}
-pushd ${BUILDDIR}/LVM2.2.03.33
+tar xvf ${DOWNLOADDIR}/LVM2.2.03.34.tgz -C ${BUILDDIR}
+pushd ${BUILDDIR}/LVM2.2.03.34
     ./configure --prefix=/usr --libdir=/usr/lib32 --with-usrlibdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --enable-cmdlib --enable-pkgconfig --enable-udev_sync \
@@ -3064,10 +3076,10 @@ EOF
 　　改设置内容主要是设置了一些基本的界面和操作特性，如Tab转换成几个空格显示，不同的终端下背景颜色等等。
 
 #### UnRAR
-　　https://www.rarlab.com/rar/unrarsrc-7.1.8.tar.gz
+　　https://www.rarlab.com/rar/unrarsrc-7.1.10.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/unrarsrc-7.1.8.tar.gz -C ${BUILDDIR}
+tar xvf ${DOWNLOADDIR}/unrarsrc-7.1.10.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/unrar
 	sed -i "s@-march=native -O2@${CXXFLAGS}@g" makefile
 	make CXX="${CROSS_TARGET}-g++" STRIP=${CROSS_TARGET}-strip -f makefile ${JOBS}
@@ -3243,11 +3255,11 @@ popd
 ```
 
 #### Jasper
-　　https://github.com/jasper-software/jasper/archive/version-4.2.5/jasper-4.2.5.tar.gz
+　　https://github.com/jasper-software/jasper/archive/version-4.2.8/jasper-4.2.8.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/jasper-4.2.5.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/jasper-4.2.5
+tar xvf ${DOWNLOADDIR}/jasper-4.2.8.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/jasper-4.2.8
 	mkdir build
 	pushd build
 		CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" \
@@ -3357,11 +3369,11 @@ cp -a ${SYSDIR}/sysroot/usr/bin/glib-mkenums ${SYSDIR}/cross-tools/bin/
 ```
 
 #### HarfBuzz
-　　https://github.com/harfbuzz/harfbuzz/releases/download/11.2.1/harfbuzz-11.2.1.tar.xz
+　　https://github.com/harfbuzz/harfbuzz/releases/download/11.4.1/harfbuzz-11.4.1.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.2.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.2.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.4.1
     mkdir cross-build
     pushd cross-build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3397,8 +3409,8 @@ popd
 　　这次编译是加入对Graphite的支持。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.2.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.2.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.1.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.4.1
     mkdir cross-build-2
     pushd cross-build-2
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3777,11 +3789,11 @@ popd
 ```
 
 #### HWData
-　　https://github.com/vcrhonek/hwdata/archive/v0.397/hwdata-0.397.tar.gz
+　　https://github.com/vcrhonek/hwdata/archive/v0.398/hwdata-0.398.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/hwdata-0.397.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/hwdata-0.397
+tar xvf ${DOWNLOADDIR}/hwdata-0.398.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/hwdata-0.398
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
@@ -3817,11 +3829,11 @@ popd
 ```
 
 #### Libnftnl
-　　https://www.netfilter.org/pub/libnftnl/libnftnl-1.2.9.tar.xz
+　　https://www.netfilter.org/pub/libnftnl/libnftnl-1.3.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libnftnl-1.2.9.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libnftnl-1.2.9
+tar xvf ${DOWNLOADDIR}/libnftnl-1.3.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnftnl-1.3.0
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
@@ -3843,11 +3855,11 @@ popd
 
 ```
 #### Nftables
-　　https://www.netfilter.org/pub/nftables/nftables-1.1.3.tar.xz
+　　https://www.netfilter.org/pub/nftables/nftables-1.1.4.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nftables-1.1.3.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nftables-1.1.3
+tar xvf ${DOWNLOADDIR}/nftables-1.1.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nftables-1.1.4
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
