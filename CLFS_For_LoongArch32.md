@@ -684,13 +684,13 @@ popd
 
 
 ### 3.27 Meson
-　　https://github.com/mesonbuild/meson/archive/1.8.3/meson-1.8.3.tar.gz
+　　https://github.com/mesonbuild/meson/archive/1.9.0/meson-1.9.0.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.8.3.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.8.3
+tar xvf ${DOWNLOADDIR}/meson-1.9.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.9.0
 	${SYSDIR}/cross-tools/bin/python3 setup.py build
 	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -1026,11 +1026,11 @@ popd
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20250807/iana-etc-20250807.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20250826/iana-etc-20250826.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20250807.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20250807
+tar xvf ${DOWNLOADDIR}/iana-etc-20250826.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20250826
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -2018,17 +2018,17 @@ popd
 ```
 
 #### CMake
-　　https://cmake.org/files/v4.1/cmake-4.1.0.tar.gz
+　　https://cmake.org/files/v4.1/cmake-4.1.1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/cmake-4.1.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/cmake-4.1.0
+tar xvf ${DOWNLOADDIR}/cmake-4.1.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/cmake-4.1.1
     patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-support-LoongArch32.patch
     mkdir build
     pushd build
         cmake -DCMAKE_CXX_COMPILER="${CROSS_TARGET}-g++" -DCMAKE_C_COMPILER="${CROSS_TARGET}-gcc" \
 	      -DCMAKE_CXX_STANDARD_LIBRARIES="-latomic" \
-              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.1.0 \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_DOC_DIR=/share/doc/cmake-4.1.1 \
               -DOPENSSL_ROOT_DIR=${SYSDIR}/sysroot/usr -DCMAKE_BUILD_TYPE=Release ../
         sed -i "/P cmake_install.cmake/s@\tbin/cmake@\t/bin/cmake@g" Makefile
         make ${JOBS}
@@ -2622,8 +2622,8 @@ popd
 #### Meson
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.8.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.8.2
+tar xvf ${DOWNLOADDIR}/meson-1.9.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.9.0
     ${SYSDIR}/cross-tools/bin/python3 setup.py build
     ${SYSDIR}/cross-tools/bin/python3 setup.py install --root=${SYSDIR}/sysroot --prefix=/usr
     sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/meson
@@ -2848,11 +2848,11 @@ popd
 ```
 
 #### Git
-　　https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.50.1.tar.xz
+　　https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.51.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/git-2.50.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/git-2.50.1
+tar xvf ${DOWNLOADDIR}/git-2.51.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/git-2.51.0
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--with-gitconfig=/etc/gitconfig --with-python=python3 --without-iconv \
 		ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=no
@@ -2918,11 +2918,11 @@ popd
 ```
 
 #### Xfsprogs
-　　https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.15.0.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-6.16.0.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/xfsprogs-6.15.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/xfsprogs-6.15.0
+tar xvf ${DOWNLOADDIR}/xfsprogs-6.16.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/xfsprogs-6.16.0
     patch -Np1 -i ${DOWNLOADDIR}/0001-Fix-for-cross-build.patch
     patch -Np1 -i ${DOWNLOADDIR}/0002-Fix-for-gcc-13.patch
     CC=${CROSS_TARGET}-gcc ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} \
@@ -2944,12 +2944,12 @@ popd
 ```
 
 #### Mdadm
-　　https://mirrors.edge.kernel.org/pub/linux/utils/raid/mdadm/mdadm-4.3.tar.xz
+　　https://mirrors.edge.kernel.org/pub/linux/utils/raid/mdadm/mdadm-4.4.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/mdadm-4.3.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/mdadm-4.3
-    make CC="${CROSS_TARGET}-gcc" CXFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization -Wno-error=format" ${JOBS}
+tar xvf ${DOWNLOADDIR}/mdadm-4.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/mdadm-4.4
+    make CC="${CROSS_TARGET}-gcc" CXFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization -Wno-error=format-truncation -Wno-error=format" ${JOBS}
     make DESTDIR=${SYSDIR}/sysroot PKG_CONFIG=${CROSS_TARGET}-pkg-config install
 popd
 ```
@@ -2989,11 +2989,11 @@ popd
 ```
 
 #### PCRE2
-　　https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.45/pcre2-10.45.tar.bz2
+　　https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.46/pcre2-10.46.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pcre2-10.45.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/pcre2-10.45
+tar xvf ${DOWNLOADDIR}/pcre2-10.46.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/pcre2-10.46
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 		--host=${CROSS_TARGET} --enable-unicode --disable-jit \
 		--enable-pcre2-16 --enable-pcre2-32 --enable-pcre2grep-libz \
@@ -3155,9 +3155,11 @@ popd
 ```
 
 #### Boost
+　　https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2
+
 ```sh
-tar xvf ${DOWNLOADDIR}/boost_1_88_0.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/boost_1_88_0
+tar xvf ${DOWNLOADDIR}/boost_1_89_0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/boost_1_89_0
     patch -Np1 -i ${DOWNLOADDIR}/0001-boost-add-loongarch32-support.patch
     ./bootstrap.sh ICU_ROOT=${SYSDIR}/sysroot/usr --prefix=/usr --libdir=/usr/lib32 --with-python=python3
     sed -i "/using gcc/s@using gcc@& : loongarch32 : ${CROSS_TARGET}-gcc@g" project-config.jam
@@ -3369,11 +3371,11 @@ cp -a ${SYSDIR}/sysroot/usr/bin/glib-mkenums ${SYSDIR}/cross-tools/bin/
 ```
 
 #### HarfBuzz
-　　https://github.com/harfbuzz/harfbuzz/releases/download/11.4.1/harfbuzz-11.4.1.tar.xz
+　　https://github.com/harfbuzz/harfbuzz/releases/download/11.4.5/harfbuzz-11.4.5.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.4.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.4.5
     mkdir cross-build
     pushd cross-build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3409,8 +3411,8 @@ popd
 　　这次编译是加入对Graphite的支持。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.1.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/harfbuzz-11.4.1
+tar xvf ${DOWNLOADDIR}/harfbuzz-11.4.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/harfbuzz-11.4.5
     mkdir cross-build-2
     pushd cross-build-2
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -3460,11 +3462,11 @@ popd
 ```
 
 #### Fontconfig
-　　https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.16.0.tar.xz
+　　https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/fontconfig-2.16.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/fontconfig-2.16.0
+tar xvf ${DOWNLOADDIR}/fontconfig-2.17.1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/fontconfig-2.17.1
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--sysconfdir=/etc --localstatedir=/var --disable-docs
@@ -3855,11 +3857,11 @@ popd
 
 ```
 #### Nftables
-　　https://www.netfilter.org/pub/nftables/nftables-1.1.4.tar.xz
+　　https://www.netfilter.org/pub/nftables/nftables-1.1.5.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nftables-1.1.4.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nftables-1.1.4
+tar xvf ${DOWNLOADDIR}/nftables-1.1.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nftables-1.1.5
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
