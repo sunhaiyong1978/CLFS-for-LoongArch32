@@ -3791,11 +3791,11 @@ popd
 ```
 
 #### HWData
-　　https://github.com/vcrhonek/hwdata/archive/v0.398/hwdata-0.398.tar.gz
+　　https://github.com/vcrhonek/hwdata/archive/v0.399/hwdata-0.399.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/hwdata-0.398.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/hwdata-0.398
+tar xvf ${DOWNLOADDIR}/hwdata-0.399.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/hwdata-0.399
 	./configure --prefix=/usr --libdir=/usr/lib32 \
                     --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	CC="${CROSS_TARGET}-gcc" CXX="${CROSS_TARGET}-g++" make -j${JOBS}
