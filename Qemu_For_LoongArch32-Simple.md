@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿# <center>使用QEMU运行基于LoongArch32架构的Linux系统（简化版本）</center>
+﻿# <center>使用QEMU运行基于LoongArch32架构的Linux系统（简化版本）</center>
 
 <center>（Qemu For LoongArch32 Simple）</center>  
 
@@ -9,19 +9,22 @@
 　　本文的目的是通过简单的操作使用QEMU运行一个基于LoongArch32制作的Linux系统。
 
 ## 2 环境准备
+
 ### 准备Linux系统
+
 　　请准备一个通用Linux的环境，比如Fedora、Debian等。
 
 ### 下载QEMU
+
 　　在Linux环境中下载可以支持LoongArch架构的QEMU：
 
 　　机器是X86系统，下载地址：
 
-https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.9/qemu-x86_64-to-loongarch32
+https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/qemu-x86_64-to-loongarch32
 
 　　如果你刚巧手上有一个龙芯3A 5000/6000的机器(使用的是LoongArch ABI 2.0的操作系统)，可以下载：
 
-https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.9/qemu-loongarch64-to-loongarch32
+https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/qemu-loongarch64-to-loongarch32
 
 请将下载的文件更名为qemu-loongarch32，并存放到/usr/bin目录中，如X86的文件使用命令：
 
@@ -40,7 +43,7 @@ sudo chmod +x /usr/bin/qemu-loongarch32
 
 ```sh
 cd /tmp
-wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.10/loongarch32-Yongbao-Embedded-0.10-20250612-sysroot.tar.xz
+wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
 ```
 
 　　以上下载的系统是一个完全使用已开放的源代码构建的基于LoongArch32指令集架构的Linux系统。
@@ -53,7 +56,7 @@ wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.1
 cd /opt
 sudo mkdir clfs-os
 cd clfs-os
-sudo tar xvpf /tmp/loongarch32-Yongbao-Embedded-0.10-20250612-sysroot.tar.xz
+sudo tar xvpf /tmp/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
 ```
 　　经过一段时间的解压后，我们就在/opt/clfs-os目录中拥有了一个基于LoongArch指令集制作的系统。
 
@@ -83,7 +86,7 @@ sudo chroot /opt/clfs-os
 ```
 　　这个时候我们会看到熟悉的Bash提示符：
 
-　　bash-5.1#
+　　[root@Sunhaiyong /]#
 
 　　尝试的输入一些命令，比如ls、vi，你会发现可以完全直接就运行起来了。
 
