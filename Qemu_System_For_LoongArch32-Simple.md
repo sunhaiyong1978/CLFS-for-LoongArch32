@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿# <center>使用QEMU（全系统模式）运行基于LoongArch32架构的Linux系统</center>
+﻿# <center>使用QEMU（全系统模式）运行基于LoongArch32架构的Linux系统</center>
 
 <center>（Qemu System For LoongArch32）</center>  
 
@@ -118,9 +118,5 @@ loongarch32
 　　现在已经可以在LoongArch32的系统中运行一些命令，也可以编译一些软件，但因为运行在QEMU中，所以性能会受到主机系统本身性能的影响较大。
 
 　　感谢大家支持，欢迎提出宝贵的意见。
-
-
-
-
 
 
