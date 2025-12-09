@@ -46,7 +46,9 @@ cd /tmp
 wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
 ```
 
-　　以上下载的系统是一个完全使用已开放的源代码构建的基于LoongArch32指令集架构的Linux系统。
+　　以上下载的系统是一个完全使用已开放的源代码构建的基于LoongArch32标准版指令集架构的Linux系统。
+
+　　如果想使用32位精简版指令集系统，需下载: https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32r-Yongbao-Embedded-0.15-sysroot.tar.xz
 
 
 #### 解压缩LoongArch的Linux系统
@@ -58,7 +60,8 @@ sudo mkdir clfs-os
 cd clfs-os
 sudo tar xvpf /tmp/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
 ```
-　　经过一段时间的解压后，我们就在/opt/clfs-os目录中拥有了一个基于LoongArch指令集制作的系统。
+　　经过一段时间的解压后，我们就在/opt/clfs-os目录中拥有了一个基于LoongArch 32位指令集制作的系统(如下载的是32位精简版指令的系统，改为解压 loongarch32r-Yongbao-Embedded-0.15-sysroot.tar.xz 文件)。
+
 
 ## 3 使用QEMU
 

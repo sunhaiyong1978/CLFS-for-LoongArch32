@@ -42,10 +42,20 @@ popd
 
 #### 下载LoongArch的Linux系统
 
-　　在GitHub上有已经制作好的LoongArch32 Linux系统，使用以下地址步骤进行下载：  
+　　在GitHub上有已经制作好的 LoongArch 32位标准版指令集（la32s） Linux 系统，使用以下地址步骤进行下载：  
 
 ```sh
 wget -c	https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
+```
+　　如果想尝试使用32位精简版指令集(la32r) Linux 系统，使用以下地址进行下载：
+
+```sh
+wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz
+```
+
+　　下载用来启动系统的LoongArch 32位内核：
+
+```sh
 wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.15/loongarch32s-Yongbao-Embedded-0.15-kernel_la32s.tar.xz
 ```
 
@@ -54,7 +64,7 @@ wget -c https://github.com/sunhaiyong1978/Yongbao-Embedded/releases/download/0.1
 
 #### 解压缩LoongArch的Linux系统
 
-　　请使用root权限的用户完成以下解压缩的步骤：
+　　请使用root权限的用户完成以下解压缩的步骤（以32位标准版为例，如需使用32位精简版修改使用对应的文件即可）：
 
 ```sh
 # 创建一个8G大小的磁盘文件
@@ -62,11 +72,15 @@ dd if=/dev/zero of=loongarch32s-system.raw bs=10M count=800
 mkfs.ext4 loongarch32s-system.raw
 mkdir clfs-os
 sudo mount loongarch32s-system.raw clfs-os/
-sudo tar xvpf /tmp/loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz -C clfs-os/
-sudo tar xvpf /tmp/loongarch32s-Yongbao-Embedded-0.15-kernel_la32s.tar.xz -C clfs-os/
+sudo tar xvpf loongarch32s-Yongbao-Embedded-0.15-sysroot.tar.xz -C clfs-os/
 ```
+　　经过一段时间的解压后，我们就在 clfs-os 目录中拥有了一个基于LoongArch指令集制作的系统。
 
-　　经过一段时间的解压后，我们就在/opt/clfs-os目录中拥有了一个基于LoongArch指令集制作的系统。
+　　启动的系统需要包含内核模块的支持，接下来将内核模块一同解压到 clfs-os 目录中，步骤如下：
+
+```sh
+sudo tar xvpf loongarch32s-Yongbao-Embedded-0.15-kernel_la32s.tar.xz -C clfs-os/
+```
 
 　　提取启动内核：
 
