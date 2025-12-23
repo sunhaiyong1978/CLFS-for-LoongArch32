@@ -248,7 +248,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/FlyGoat/linux.git --depth 1 -b b4/la32
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --depth 1 -b master
 pushd linux
 	make mrproper
 	make ARCH=loongarch INSTALL_HDR_PATH=dest headers_install
@@ -266,7 +266,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/binutils-gdb.git --depth 1 -b la32
+git clone https://sourceware.org/git/binutils-gdb.git --depth 1 -b master
 pushd binutils-gdb
 	rm -rf gdb* libdecnumber readline sim
 	mkdir tools-build
@@ -333,7 +333,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/gcc.git --depth 1 -b la32
+git clone git://sourceware.org/git/gcc.git --depth 1 -b master
 pushd gcc
 	mkdir tools-build
 	pushd tools-build
@@ -437,7 +437,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/gcc.git --depth 1 -b la32
+git clone git://sourceware.org/git/gcc.git --depth 1 -b master
 pushd gcc
 	mkdir tools-build-all
 	pushd tools-build-all
@@ -1120,7 +1120,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/binutils-gdb.git --depth 1 -b la32
+git clone https://sourceware.org/git/binutils-gdb.git --depth 1 -b master
 pushd binutils-gdb
 	rm -rf gdb* libdecnumber readline sim
 	mkdir cross-build
@@ -1140,7 +1140,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/gcc.git --depth 1 -b la32
+git clone git://sourceware.org/git/gcc.git --depth 1 -b master
 pushd gcc
 	sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
 	mkdir cross-build
