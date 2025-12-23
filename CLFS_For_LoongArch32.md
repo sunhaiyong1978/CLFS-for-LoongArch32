@@ -3859,6 +3859,61 @@ pushd ${BUILDDIR}/libedit-20251016-3.1
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
 
+#### Jansson
+　　https://digip.org/jansson/releases/jansson-2.13.1.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/jansson-2.13.1.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/jansson-2.13.1
+    cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* ./
+    ./configure $COMMON_CONFIG
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    rm -v ${SYSDIR}/sysroot/usr/lib32/libjansson.la
+popd
+```
+
+#### Libnfnetlink
+　　https://www.netfilter.org/pub/libnfnetlink/libnfnetlink-1.0.2.tar.bz2
+
+```sh
+tar xvf ${DOWNLOADDIR}/libnfnetlink-1.0.2.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnfnetlink-1.0.2
+    cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* ./
+    ./configure $COMMON_CONFIG
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    rm -v ${SYSDIR}/sysroot/usr/lib32/libnfnetlink.la
+popd
+```
+
+#### Libnetfilter_conntrack
+　　https://www.netfilter.org/pub/libnetfilter_conntrack/libnetfilter_conntrack-1.1.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/libnetfilter_conntrack-1.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libnetfilter_conntrack-1.1.0
+    cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* ./
+    ./configure $COMMON_CONFIG
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    rm -v ${SYSDIR}/sysroot/usr/lib32/libnetfilter_conntrack.la
+popd
+```
+
+#### Iptables
+　　https://www.netfilter.org/projects/iptables/files/iptables-1.8.11.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/iptables-1.8.11.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iptables-1.8.11
+    cp ${SYSDIR}/sysroot/usr/share/automake-*/config.* ./
+    ./configure $COMMON_CONFIG --enable-libipq --disable-nftables
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
 ```
 #### Nftables
 　　https://www.netfilter.org/pub/nftables/nftables-1.1.5.tar.xz
@@ -3876,6 +3931,93 @@ pushd ${BUILDDIR}/nftables-1.1.5
 		CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 		${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --ignore-installed --no-user nftables --root=${SYSDIR}/sysroot --prefix=/usr
 	popd
+popd
+```
+
+#### DBus-Python
+　　https://dbus.freedesktop.org/releases/dbus-python/dbus-python-1.4.0.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/dbus-python-1.4.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dbus-python-1.4.0
+    autoreconf -ifv
+    mkdir python3
+    pushd python3
+        PYTHON=${SYSDIR}/cross-tools/bin/python3 \
+        ../configure $COMMON_CONFIG --docdir=/usr/share/doc/dbus-python
+        make ${JOBS}
+        make DESTDIR=${SYSDIR}/sysroot install
+    popd
+popd
+```
+
+#### Pixman
+　　https://www.cairographics.org/releases/pixman-0.46.4.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pixman-0.46.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pixman-0.46.4
+    mkdir cross-build
+    pushd cross-build
+        meson --prefix=/usr --libdir=/usr/lib32 \
+              --buildtype=release \
+              --cross-file=${BUILDDIR}/meson-cross.txt ..
+        ninja
+        DESTDIR=${SYSDIR}/sysroot ninja install
+    popd
+popd
+```
+
+#### Cairo
+　　https://www.cairographics.org/releases/cairo-1.18.4.tar.xz
+
+```sh
+tar xvf ${DOWNLOADDIR}/cairo-1.18.4.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/cairo-1.18.4
+    ./configure $COMMON_CONFIG --enable-tee --enable-gl --enable-xlib-xcb --disable-trace
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+    rm -v ${SYSDIR}/sysroot/usr/lib32/libcairo*.la
+popd
+```
+
+#### PyCairo
+　　https://github.com/pygobject/pycairo/archive/v1.29.0/pycairo-1.29.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pycairo-1.29.0.tar.gz -C ${BUILDDIR}
+cp -a ${BUILDDIR}/pycairo-1.29.0{,-native}
+pushd ${BUILDDIR}/pycairo-1.29.0-native
+    PKG_CONFIG_PATH="" \
+    LDFLAGS="" PKG_CONFIG_SYSROOT_DIR="" ${SYSDIR}/cross-tools/bin/python3 setup.py build
+    PKG_CONFIG_PATH="" \
+    LDFLAGS="" PKG_CONFIG_SYSROOT_DIR="" ${SYSDIR}/cross-tools/bin/python3 setup.py install --optimize=1
+popd
+pushd ${BUILDDIR}/pycairo-1.29.0
+        _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+        ${SYSDIR}/cross-tools/bin/python3 setup.py build
+        _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+        ${SYSDIR}/cross-tools/bin/python3 setup.py install --optimize=1 --root=${SYSDIR}/sysroot --prefix=/usr
+popd
+```
+
+#### PyGobject
+　　https://download.gnome.org/sources/pygobject/3.55/pygobject-3.55.0.tar.gz
+
+```sh
+tar xvf ${DOWNLOADDIR}/pygobject-3.55.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/pygobject-3.55.0
+    mkdir cross-build
+    pushd cross-build
+        PYTHON=${SYSDIR}/cross-tools/bin/python3 \
+        _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
+        meson --prefix=/usr --libdir=/usr/lib32 \
+              --buildtype=release \
+              --cross-file=${BUILDDIR}/meson-cross.txt ..
+        sed -i -e "s@\(${SYSDIR}/\)sysroot/usr\(.*\)\(g-ir-compiler\|g-ir-scanner\)@\1cross-tools\2${CROSS_TARGET}-\3@g" build.ninja
+        CC="${CROSS_TARGET}-gcc" ninja
+        DESTDIR=${SYSDIR}/sysroot ninja install
+    popd
 popd
 ```
 
