@@ -2532,7 +2532,7 @@ pushd ${BUILDDIR}/sudo-1.9.17p2
 		--with-secure-path --with-all-insults --with-env-editor \
 		--with-passprompt="[sudo] password for %p: "
 	sed -i "/^install_uid/s@= 0@= $(id -u)@g" Makefile
-	sed -i "/^install_gid/s@= 0@= $(id -u)@g" Makefile
+	sed -i "/^install_gid/s@= 0@= $(id -g)@g" Makefile
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
 popd
