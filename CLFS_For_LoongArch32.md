@@ -260,27 +260,26 @@ popd
 ```
 
 ### 3.2 交叉编译器之Binutils
+　　https://ftp.gnu.org/gnu/binutils/binutils-2.46.0.tar.xz
 
 * 制作步骤  
 　　按以下步骤制作交叉编译工具链中的Binutils并安装到存放交叉工具链的目录中。
 
 ```sh
-pushd ${BUILDDIR}
-git clone https://sourceware.org/git/binutils-gdb.git --depth 1 -b master
-pushd binutils-gdb
+tar xvf ${DOWNLOADDIR}/binutils-2.46.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/binutils-2.46.0
 	rm -rf gdb* libdecnumber readline sim
 	mkdir tools-build
 	pushd tools-build
-    	CC=gcc AR=ar AS=as \
-	    ../configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} --host=${CROSS_HOST} \
-	                 --target=${CROSS_TARGET} --with-sysroot=${SYSDIR}/sysroot --disable-nls \
-	                 --disable-static --enable-64-bit-bfd --disable-werror
-    	make configure-host ${JOBS}
-    	make ${JOBS}
-    	make install-strip
-    	cp -v ../include/libiberty.h ${SYSDIR}/sysroot/usr/include
-    popd
-popd
+	    	CC=gcc AR=ar AS=as \
+		    ../configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} --host=${CROSS_HOST} \
+	        	         --target=${CROSS_TARGET} --with-sysroot=${SYSDIR}/sysroot --disable-nls \
+	                	 --disable-static --enable-64-bit-bfd --disable-werror
+	    	make configure-host ${JOBS}
+    		make ${JOBS}
+    		make install-strip
+	    	cp -v ../include/libiberty.h ${SYSDIR}/sysroot/usr/include
+	popd
 popd
 ```
 
@@ -328,14 +327,14 @@ popd
 ```
 
 ### 3.6 交叉编译器之GCC（精简版）
+　　https://ftp.gnu.org/gnu/gcc/gcc-16.1.0/gcc-16.1.0.tar.xz
 
 * 制作步骤  
 　　制作交叉编译器中的GCC，第一次编译交叉工具链的GCC需要采用精简方式进行编译和安装，否则会因为缺少目标系统的C库而导致部分内容编译链接失败，制作过程如下：
 
 ```sh
-pushd ${BUILDDIR}
-git clone git://sourceware.org/git/gcc.git --depth 1 -b master
-pushd gcc
+tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.1.0
 	mkdir tools-build
 	pushd tools-build
 		AR=ar LDFLAGS="-Wl,-rpath,${SYSDIR}/cross-tools/lib" \
@@ -351,8 +350,6 @@ pushd gcc
 		make all-gcc all-target-libgcc ${JOBS}
 		make install-strip-gcc install-strip-target-libgcc
 	popd
-popd
-rm -rf gcc
 popd
 ```
 
@@ -384,7 +381,7 @@ popd
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/glibc.git --depth 1 -b la32
+git clone https://sourceware.org/git/glibc.git --depth 1 -b master
 pushd glibc
     mkdir -v build-32
     pushd build-32
@@ -437,9 +434,8 @@ popd
 　　完成目标系统的Glibc之后就可以着手制作交叉工具链中完整版的GCC了，制作步骤如下：
 
 ```sh
-pushd ${BUILDDIR}
-git clone git://sourceware.org/git/gcc.git --depth 1 -b master
-pushd gcc
+tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.1.0
 	mkdir tools-build-all
 	pushd tools-build-all
 		AR=ar LDFLAGS="-Wl,-rpath,${SYSDIR}/cross-tools/lib" \
@@ -454,7 +450,6 @@ pushd gcc
 		make ${JOBS}
 		make install-strip
 	popd
-popd
 popd
 ```
 
@@ -534,7 +529,49 @@ pushd ${BUILDDIR}/perl-5.42.2
 popd
 ```
 
-### 3.16 XML-Parser
+### 3.16 File-ShareDir-Install
+　　https://cpan.metacpan.org/authors/id/E/ET/ETHER/File-ShareDir-Install-0.14.tar.gz
+
+　　给交叉工具链中的Perl提供File-ShareDir-Install软件包提供的Perl组件。
+
+```sh
+tar xvf ${DOWNLOADDIR}/File-ShareDir-Install-0.14.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/File-ShareDir-Install-0.14
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.17 File-ShareDir
+　　https://cpan.metacpan.org/authors/id/R/RE/REHSACK/File-ShareDir-1.118.tar.gz
+
+　　给交叉工具链中的Perl提供File-ShareDir软件包提供的Perl组件。
+
+```sh
+tar xvf ${DOWNLOADDIR}/File-ShareDir-1.118.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/File-ShareDir-1.118
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.18 Class-Inspector
+　　https://cpan.metacpan.org/authors/id/P/PL/PLICEASE/Class-Inspector-1.36.tar.gz
+
+　　给交叉工具链中的Perl提供File-ShareDir-Install软件包提供的Perl组件。
+
+```sh
+tar xvf ${DOWNLOADDIR}/Class-Inspector-1.36.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Class-Inspector-1.36
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL
+    make ${JOBS}
+    make install
+popd
+```
+
+### 3.19 XML-Parser
 　　https://cpan.metacpan.org/authors/id/T/TO/TODDR/XML-Parser-2.58.tar.gz
 
 　　给交叉工具链中的Perl提供XML-Parser软件包提供的Perl组件。
@@ -548,7 +585,7 @@ pushd ${BUILDDIR}/XML-Parser-2.58
 popd
 ```
 
-### 3.17 URI
+### 3.20 URI
 　　https://www.cpan.org/authors/id/O/OA/OALDERS/URI-5.34.tar.gz
 
 　　给交叉工具链中的Perl提供URI软件包提供的Perl组件。
@@ -562,7 +599,7 @@ pushd ${BUILDDIR}/URI-5.34
 popd
 ```
 
-### 3.18 Python3
+### 3.21 Python3
 　　https://www.python.org/ftp/python/3.14.5/Python-3.14.5.tar.xz
 
 ```sh
@@ -586,7 +623,7 @@ pushd ${BUILDDIR}/Python-3.14.5
 popd
 ```
 
-### 3.19 Setuptools
+### 3.22 Setuptools
 　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-82.0.1.tar.gz
 
 　　Setuptools软件包是Python的基础软件包之一。
@@ -600,7 +637,7 @@ popd
 ```
 	编译Setuptools软件包建议使用pip命令，但因为当前使用pip命令编译存在依赖问题，所以本次编译Setuptools软件包直接使用python命令运行setup.py脚本进行编译和安装。
 
-### 3.20 Flit-Core
+### 3.23 Flit-Core
 　　https://files.pythonhosted.org/packages/source/f/flit_core/flit_core-3.12.0.tar.gz
 
 ```sh
@@ -611,7 +648,7 @@ pushd ${BUILDDIR}/flit_core-3.12.0
 popd
 ```
 
-### 3.21 Pip
+### 3.24 Pip
 　　https://github.com/pypa/pip/archive/26.1.1/pip-26.1.1.tar.gz
 
 　　pip软件包是Python的基础软件包之一。
@@ -624,7 +661,7 @@ pushd ${BUILDDIR}/pip-26.1.1
 popd
 ```
 
-### 3.22 Wheel
+### 3.25 Wheel
 　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.47.0.tar.gz
 
 　　Wheel软件包是Python的基础软件包之一。
@@ -637,7 +674,7 @@ pushd ${BUILDDIR}/wheel-0.47.0
 popd
 ```
 
-### 3.23 Setuptools
+### 3.26 Setuptools
 
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 
@@ -649,7 +686,7 @@ pushd ${BUILDDIR}/setuptools-82.0.1
 popd
 ```
 
-### 3.24 MarkupSafe
+### 3.27 MarkupSafe
 　　https://files.pythonhosted.org/packages/source/m/markupsafe/markupsafe-3.0.3.tar.gz
 
 ```sh
@@ -660,7 +697,7 @@ pushd ${BUILDDIR}/markupsafe-3.0.3
 popd
 ```
 
-### 3.25 Jinja2
+### 3.28 Jinja2
 　　https://files.pythonhosted.org/packages/source/j/jinja2/jinja2-3.1.6.tar.gz
 
 ```sh
@@ -671,7 +708,7 @@ pushd ${BUILDDIR}/jinja2-3.1.6
 popd
 ```
 
-### 3.26 Distlib
+### 3.29 Distlib
 　　https://files.pythonhosted.org/packages/source/d/distlib/distlib-0.4.0.tar.gz
 
 ```sh
@@ -683,7 +720,7 @@ popd
 ```
 
 
-### 3.27 Meson
+### 3.30 Meson
 　　https://github.com/mesonbuild/meson/archive/1.11.1/meson-1.11.1.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
@@ -696,7 +733,7 @@ pushd ${BUILDDIR}/meson-1.11.1
 popd
 ```
 
-### 3.28 Pkg-Config
+### 3.31 Pkg-Config
 　　https://distfiles.dereferenced.org/pkgconf/pkgconf-2.5.1.tar.xz
 
 　　为了能在交叉编译目标系统的过程中使用目标系统中已经安装的“pc”文件，我们在交叉工具链的目录中安装一个专门用来从目标系统目录中的查询“pc”文件的pkg-config命令，制作过程如下：
@@ -712,7 +749,7 @@ pushd ${BUILDDIR}/pkgconf-2.5.1
 popd
 ```
 
-### 3.29 Groff
+### 3.32 Groff
 　　https://ftp.gnu.org/gnu/groff/groff-1.24.1.tar.gz
 
 　　编译目标系统的过程中会对Groff版本有一定要求，因此在交叉工具链的目录中安装一个版本较新的Groff。
@@ -726,7 +763,7 @@ pushd ${BUILDDIR}/groff-1.24.1
 popd
 ```
 
-### 3.30 Guile
+### 3.33 Guile
 　　https://ftp.gnu.org/gnu/guile/guile-3.0.11.tar.xz
 
 　　编译目标系统的过程中会需要用到Guile软件包提供的工具，在交叉工具链的目录中安装一个版本较新的Guile。
@@ -740,7 +777,7 @@ pushd ${BUILDDIR}/guile-3.0.11
 popd
 ```
 
-### 3.31 Make
+### 3.34 Make
 　　https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
 
 ```sh
@@ -752,7 +789,7 @@ pushd ${BUILDDIR}/make-4.4.1
 popd
 ```
 
-### 3.32 LLVM
+### 3.35 LLVM
 
 ```sh
 pushd ${BUILDDIR}
@@ -784,7 +821,7 @@ rm -rf llvm-project
 popd
 ```
 
-### 3.33 QEMU
+### 3.36 QEMU
 
 ```sh
 pushd ${BUILDDIR}
@@ -814,7 +851,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/qemu-loongarch32{,-ldd}
 ```
 　　上面步骤中创建了两个脚本命令qemu-loongarch32和qemu-loongarch32-ldd，前者可以执行目标系统中的二进制程序，后者可以查看目标系统的二进制程序或库文件需要的动态链接库。
 
-### 3.34 Glib
+### 3.37 Glib
 　　https://download.gnome.org/sources/glib/2.88/glib-2.88.1.tar.xz
 
 ```sh
@@ -831,7 +868,7 @@ pushd ${BUILDDIR}/glib-2.88.1
 popd
 ```
 
-### 3.35 Gobject-Introspection
+### 3.38 Gobject-Introspection
 　　https://download.gnome.org/sources/gobject-introspection/1.86/gobject-introspection-1.86.0.tar.xz
 
 ```sh
@@ -867,7 +904,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-g-ir-compiler
 ```
 　　为了在给目标系统中的一些软件正确生成对应的gir文件，我们在交叉编译目录中增加脚本命令来完成这个目标。
 
-### 3.36 Vala
+### 3.39 Vala
 　　https://download.gnome.org/sources/vala/0.56/vala-0.56.19.tar.xz
 
 ```sh
@@ -892,7 +929,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-valac
 
 ```
 
-### 3.37 TCL
+### 3.40 TCL
 　　https://sourceforge.net/projects/tcl/files/Tcl/8.6.14/tcl8.6.14-src.tar.gz
 
 ```sh
@@ -1136,9 +1173,8 @@ popd
 　　这次编译的Binutils是目标系统中使用的，在交叉编译阶段不会使用到它。
 
 ```sh
-pushd ${BUILDDIR}
-git clone https://sourceware.org/git/binutils-gdb.git --depth 1 -b master
-pushd binutils-gdb
+tar xvf ${DOWNLOADDIR}/binutils-2.46.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/binutils-2.46.0
 	rm -rf gdb* libdecnumber readline sim
 	mkdir cross-build
 	pushd cross-build
@@ -1149,16 +1185,14 @@ pushd binutils-gdb
 		make DESTDIR=${SYSDIR}/sysroot tooldir=/usr install
 	popd
 popd
-popd
 ```
 
 ### GCC
 　　与上面编译的Binutils一样，这次编译的GCC也是在目标系统中使用的编译器，在交叉编译阶段不会使用到它，但是其提供的libgcc、libstdc++等库可以为后续软件包的编译提供链接用的库。
 
 ```sh
-pushd ${BUILDDIR}
-git clone git://sourceware.org/git/gcc.git --depth 1 -b master
-pushd gcc
+tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.1.0
 	sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
 	mkdir cross-build
 	pushd cross-build
@@ -1176,7 +1210,6 @@ pushd gcc
 		ln -sv /usr/bin/cpp ${SYSDIR}/sysroot/lib
 		ln -sv gcc ${SYSDIR}/sysroot/usr/bin/cc
 	popd
-popd
 popd
 ```
 
@@ -1725,7 +1758,7 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-eu-readelf
 
 ```sh
 pushd ${BUILDDIR}
-git clone https://github.com/cloudspurs/libffi.git --depth 1 -b la32
+git clone https://github.com/libffi/libffi.git --depth 1
 pushd libffi
 	CFLAGS="${CFLAGS} -Wno-implicit-function-declaration -mcmodel=medium" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
@@ -2624,7 +2657,6 @@ pushd ${BUILDDIR}/nss-3.123/nss
 popd
 pushd ${BUILDDIR}/nss-3.123/dist
     install -v -m755 Linux*/lib/*.so ${SYSDIR}/sysroot/usr/lib32
-    install -v -m644 Linux*/lib/libcrmf.a ${SYSDIR}/sysroot/usr/lib32
     install -v -m755 -d ${SYSDIR}/sysroot/usr/include/nss
     cp -v -RL {public,private}/nss/* ${SYSDIR}/sysroot/usr/include/nss
     chmod -v 644 ${SYSDIR}/sysroot/usr/include/nss/*
@@ -2698,6 +2730,45 @@ pushd ${BUILDDIR}/perl-5.42.2
 	make depend
 	make ${JOBS}
 	make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### File-ShareDir-Install
+```sh
+tar xvf ${DOWNLOADDIR}/File-ShareDir-Install-0.14.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/File-ShareDir-Install-0.14
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
+    sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile Expat/Makefile
+    sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile Expat/Makefile
+    sed -i "/^LDDLFLAGS/s@/usr/local/lib@${SYSDIR}/sysroot/usr/lib32@g" Makefile Expat/Makefile
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### File-ShareDir
+```sh
+tar xvf ${DOWNLOADDIR}/File-ShareDir-1.118.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/File-ShareDir-1.118
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
+    sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile Expat/Makefile
+    sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile Expat/Makefile
+    sed -i "/^LDDLFLAGS/s@/usr/local/lib@${SYSDIR}/sysroot/usr/lib32@g" Makefile Expat/Makefile
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
+popd
+```
+
+#### Class-Inspector
+```sh
+tar xvf ${DOWNLOADDIR}/Class-Inspector-1.36.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Class-Inspector-1.36
+    ${SYSDIR}/cross-tools/bin/perl Makefile.PL CC=${CROSS_TARGET}-gcc LD=${CROSS_TARGET}-ld
+    sed -i "/^INSTALL/s@${SYSDIR}/cross-tools@/usr@g" Makefile Expat/Makefile
+    sed -i "/^PERL_INC/s@${SYSDIR}/cross-tools@${SYSDIR}/sysroot/usr@g" Makefile Expat/Makefile
+    sed -i "/^LDDLFLAGS/s@/usr/local/lib@${SYSDIR}/sysroot/usr/lib32@g" Makefile Expat/Makefile
+    make ${JOBS}
+    make DESTDIR=${SYSDIR}/sysroot install
 popd
 ```
 
