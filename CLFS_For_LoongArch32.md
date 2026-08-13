@@ -242,21 +242,24 @@ popd
 　　接下来就正式进入交叉工具链和相关工具的制作环节。
 
 ### 3.1 Linux内核头文件
+　　https://mirrors.edge.kernel.org/pub/linux/kernel/v7.x/linux-7.1.8.tar.xz
 
 * 制作步骤  
 　　按以下步骤制作Linux内核头文件并安装到目标系统目录中。
 
 ```sh
-pushd ${BUILDDIR}
-git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --depth 1 -b master
-pushd linux
+# pushd ${BUILDDIR}
+# git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --depth 1 -b master
+# pushd linux
+tar xvf ${DOWNLOADDIR}/linux-7.1.8.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/linux-7.1.8
 	make mrproper
 	make ARCH=loongarch INSTALL_HDR_PATH=dest headers_install
 	find dest/include -name '.*' -delete
 	mkdir -pv ${SYSDIR}/sysroot/usr/include
 	cp -rv dest/include/* ${SYSDIR}/sysroot/usr/include
 popd
-popd
+# popd
 ```
 
 ### 3.2 交叉编译器之Binutils
@@ -327,14 +330,14 @@ popd
 ```
 
 ### 3.6 交叉编译器之GCC（精简版）
-　　https://ftp.gnu.org/gnu/gcc/gcc-16.1.0/gcc-16.1.0.tar.xz
+　　https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz
 
 * 制作步骤  
 　　制作交叉编译器中的GCC，第一次编译交叉工具链的GCC需要采用精简方式进行编译和安装，否则会因为缺少目标系统的C库而导致部分内容编译链接失败，制作过程如下：
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gcc-16.1.0
+tar xvf ${DOWNLOADDIR}/gcc-16.2.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.2.0
 	mkdir tools-build
 	pushd tools-build
 		AR=ar LDFLAGS="-Wl,-rpath,${SYSDIR}/cross-tools/lib" \
@@ -434,8 +437,8 @@ popd
 　　完成目标系统的Glibc之后就可以着手制作交叉工具链中完整版的GCC了，制作步骤如下：
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gcc-16.1.0
+tar xvf ${DOWNLOADDIR}/gcc-16.2.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.2.0
 	mkdir tools-build-all
 	pushd tools-build-all
 		AR=ar LDFLAGS="-Wl,-rpath,${SYSDIR}/cross-tools/lib" \
@@ -600,11 +603,11 @@ popd
 ```
 
 ### 3.21 Python3
-　　https://www.python.org/ftp/python/3.14.6/Python-3.14.6.tar.xz
+　　https://www.python.org/ftp/python/3.14.7/Python-3.14.7.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/Python-3.14.6.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/Python-3.14.6
+tar xvf ${DOWNLOADDIR}/Python-3.14.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.14.7
 	CFLAGS="${CFLAGS} -fPIC"
 	./configure --prefix=${SYSDIR}/cross-tools --with-platlibdir=lib32 \
 	            --disable-shared --with-system-expat --with-system-ffi \
@@ -624,13 +627,13 @@ popd
 ```
 
 ### 3.22 Setuptools
-　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-83.0.0.tar.gz
+　　https://files.pythonhosted.org/packages/source/s/setuptools/setuptools-84.0.0.tar.gz
 
 　　Setuptools软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-83.0.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-83.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-84.0.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-84.0.0
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         ${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -662,13 +665,13 @@ popd
 ```
 
 ### 3.25 Wheel
-　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.47.0.tar.gz
+　　https://files.pythonhosted.org/packages/source/w/wheel/wheel-0.48.0.tar.gz
 
 　　Wheel软件包是Python的基础软件包之一。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/wheel-0.47.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/wheel-0.47.0
+tar xvf ${DOWNLOADDIR}/wheel-0.48.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/wheel-0.48.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user wheel
 popd
@@ -679,8 +682,8 @@ popd
 　　依赖关系满足后再次使用pip命令来重新编译和安装Setuptools软件包。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-83.0.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-83.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-84.0.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-84.0.0
         ${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
         ${SYSDIR}/cross-tools/bin/pip3 install --no-index --find-links dist --no-cache-dir --no-deps --force-reinstall --no-user setuptools
 popd
@@ -721,13 +724,13 @@ popd
 
 
 ### 3.30 Meson
-　　https://github.com/mesonbuild/meson/archive/1.11.2/meson-1.11.2.tar.gz
+　　https://github.com/mesonbuild/meson/archive/1.12.0/meson-1.12.0.tar.gz
 
 　　目标系统中部分软件对meson有版本要求，我们在交叉工具链的环境中提供一个较高版本的meson。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.11.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.11.2
+tar xvf ${DOWNLOADDIR}/meson-1.12.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.12.0
 	${SYSDIR}/cross-tools/bin/python3 setup.py build
 	${SYSDIR}/cross-tools/bin/python3 setup.py install
 popd
@@ -1079,11 +1082,11 @@ popd
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
 
 #### Iana-Etc
-　　https://github.com/Mic92/iana-etc/releases/download/20260723/iana-etc-20260723.tar.gz
+　　https://github.com/Mic92/iana-etc/releases/download/20260805/iana-etc-20260805.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/iana-etc-20260723.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/iana-etc-20260723
+tar xvf ${DOWNLOADDIR}/iana-etc-20260805.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/iana-etc-20260805
 	cp -v services protocols ${SYSDIR}/sysroot/etc
 popd
 ```
@@ -1189,8 +1192,8 @@ popd
 　　与上面编译的Binutils一样，这次编译的GCC也是在目标系统中使用的编译器，在交叉编译阶段不会使用到它，但是其提供的libgcc、libstdc++等库可以为后续软件包的编译提供链接用的库。
 
 ```sh
-tar xvf ${DOWNLOADDIR}/gcc-16.1.0.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/gcc-16.1.0
+tar xvf ${DOWNLOADDIR}/gcc-16.2.0.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/gcc-16.2.0
 	sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
 	mkdir cross-build
 	pushd cross-build
@@ -1656,11 +1659,11 @@ popd
 ```
 
 #### Expat
-　　https://sourceforge.net/projects/expat/files/expat/2.8.2/expat-2.8.2.tar.xz
+　　https://sourceforge.net/projects/expat/files/expat/2.8.3/expat-2.8.3.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/expat-2.8.2.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/expat-2.8.2
+tar xvf ${DOWNLOADDIR}/expat-2.8.3.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/expat-2.8.3
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --without-docbook
 	make ${JOBS}
@@ -1752,11 +1755,14 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-eu-readelf
 　　该软件包使用交叉编译会有个别功能探测错误，使用指定参数和取值的方式来解决，该制作步骤上采用了另一种设置参数取值的方式，若要指定的参数数值不多的情况下可以直接在configure的参数中进行设置,如```ac_cv_null_dereference=no```这就是这种设置方式，也可以通过将这两个参数写到“config.cache”，然后通过“--cache-file=config.cache”来使用。
 
 #### Libffi
+　　https://github.com/libffi/libffi/archive/v3.8.0/libffi-3.8.0.tar.gz
 
 ```sh
-pushd ${BUILDDIR}
-git clone https://github.com/libffi/libffi.git --depth 1
-pushd libffi
+# pushd ${BUILDDIR}
+# git clone https://github.com/libffi/libffi.git --depth 1
+# pushd libffi
+tar xvf ${DOWNLOADDIR}/libffi-3.8.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libffi-3.8.0
 	CFLAGS="${CFLAGS} -Wno-implicit-function-declaration -mcmodel=medium" \
 	./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --with-gcc-arch=native
@@ -1764,7 +1770,7 @@ pushd libffi
 	make DESTDIR=${SYSDIR}/sysroot install
 	cp -a ${CROSS_TARGET}/.libs/libffi_convenience.a ${SYSROOT_DIR}/usr/lib32/libffi_pic.a
 popd
-popd
+# popd
 ```
 
 #### OpenSSL
@@ -1994,11 +2000,11 @@ popd
 ```
 
 #### Libpsl
-　　https://github.com/rockdaboot/libpsl/releases/download/0.23.1/libpsl-0.23.1.tar.gz
+　　https://github.com/rockdaboot/libpsl/releases/download/0.23.2/libpsl-0.23.2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/libpsl-0.23.1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libpsl-0.23.1
+tar xvf ${DOWNLOADDIR}/libpsl-0.23.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libpsl-0.23.2
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make ${JOBS}
@@ -2059,8 +2065,8 @@ popd
 #### Python3
 
 ```sh
-tar xvf ${DOWNLOADDIR}/Python-3.14.6.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/Python-3.14.6
+tar xvf ${DOWNLOADDIR}/Python-3.14.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/Python-3.14.7
 	patch -Np1 -i ${DOWNLOADDIR}/0001-Python-3.13.1-fix-for-cross-build.patch
 cat > config.cache << "EOF"
     ac_cv_aligned_required=no
@@ -2108,8 +2114,8 @@ chmod +x ${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
 #### Python-Setuptools
 
 ```sh
-tar xvf ${DOWNLOADDIR}/setuptools-83.0.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/setuptools-83.0.0
+tar xvf ${DOWNLOADDIR}/setuptools-84.0.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/setuptools-84.0.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2145,8 +2151,8 @@ popd
 #### Wheel
 
 ```sh
-tar xvf ${DOWNLOADDIR}/wheel-0.47.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/wheel-0.47.0
+tar xvf ${DOWNLOADDIR}/wheel-0.48.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/wheel-0.48.0
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
 	${SYSDIR}/cross-tools/bin/pip3 wheel -w dist --no-build-isolation --no-deps ${PWD}
 	CC=${CROSS_TARGET}-gcc CXX=${CROSS_TARGET}-g++ _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -2360,11 +2366,11 @@ popd
 　　DBus软件包使用meson作为配置阶段的工具，我们使用准备好的meson-cross.txt作为交叉编译的配置文件进行配置。
 
 #### Shadow
-　　https://github.com/shadow-maint/shadow/archive/4.20.0/shadow-4.20.0.tar.gz
+　　https://github.com/shadow-maint/shadow/archive/4.20.2/shadow-4.20.2.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/shadow-4.20.0.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/shadow-4.20.0
+tar xvf ${DOWNLOADDIR}/shadow-4.20.2.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/shadow-4.20.2
 	autoreconf -ifv
 	sed -i 's/groups$(EXEEXT) //' src/Makefile.in
 	find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
@@ -2387,11 +2393,11 @@ popd
 　　2、一些默认路径的修改。
 
 #### Procps-NG
-　　https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-4.0.6.tar.xz
+　　https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-4.0.7.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/procps-ng-4.0.6.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/procps-ng-4.0.6
+tar xvf ${DOWNLOADDIR}/procps-ng-4.0.7.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/procps-ng-4.0.7
 	./configure --prefix=/usr --libdir=/usr/lib32  --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --disable-kill --with-systemd \
 	            ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
@@ -2425,11 +2431,11 @@ sed -i "s@=/usr@=${SYSDIR}/sysroot/usr@g" ${SYSDIR}/cross-tools/bin/mk_cmds
 ```
 
 #### OpenSSH
-　　https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.4p1.tar.gz
+　　https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.5p1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/openssh-10.4p1.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/openssh-10.4p1
+tar xvf ${DOWNLOADDIR}/openssh-10.5p1.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/openssh-10.5p1
 	rm config.{sub,guess}
 	automake --add-missing
 	./configure --prefix=/usr  --libdir=/usr/lib32 --sysconfdir=/etc/ssh \
@@ -2528,11 +2534,11 @@ popd
 ```
 
 #### DHCPCD
-　　https://github.com/NetworkConfiguration/dhcpcd/archive/v10.3.2/dhcpcd-10.3.2.tar.gz
+　　https://github.com/NetworkConfiguration/dhcpcd/archive/v10.5.0/dhcpcd-10.5.0.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/dhcpcd-10.3.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/dhcpcd-10.3.2
+tar xvf ${DOWNLOADDIR}/dhcpcd-10.5.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/dhcpcd-10.5.0
 	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-privsep
 	make ${JOBS}
@@ -2604,13 +2610,12 @@ sed -i "/wheel ALL=(ALL:ALL) ALL/s@# @@g" ${SYSDIR}/sysroot/etc/sudoers.dist
 ```
 
 #### NSPR
-　　https://archive.mozilla.org/pub/nspr/releases/v4.39/src/nspr-4.39.tar.gz
+　　https://archive.mozilla.org/pub/nspr/releases/v4.40/src/nspr-4.40.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/nspr-4.39.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/nspr-4.39/nspr
+tar xvf ${DOWNLOADDIR}/nspr-4.40.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/nspr-4.40/nspr
     patch -Np2 -i ${DOWNLOADDIR}/0001-nspr-add-loongarch32-support.patch
-    cp ${SYSDIR}/cross-tools/share/automake-*/config.* build/autoconf/
     ./configure --prefix=/usr --libdir=/usr/lib32 --build=${CROSS_HOST} \
                 --host=${CROSS_TARGET} --with-mozilla \
                 --with-pthreads
@@ -2685,8 +2690,8 @@ popd
 #### Meson
 
 ```sh
-tar xvf ${DOWNLOADDIR}/meson-1.11.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/meson-1.11.2
+tar xvf ${DOWNLOADDIR}/meson-1.12.0.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/meson-1.12.0
     ${SYSDIR}/cross-tools/bin/python3 setup.py build
     ${SYSDIR}/cross-tools/bin/python3 setup.py install --root=${SYSDIR}/sysroot --prefix=/usr
     sed -i "s@${SYSDIR}/cross-tools@@g" ${SYSDIR}/sysroot/bin/meson
@@ -3058,11 +3063,11 @@ popd
 　　Mdadm软件包使用CXFLAGS来传递CFLAGS参数，以保证其内部参数传递正确。
 
 #### LVM2
-　　https://sourceware.org/ftp/lvm2/LVM2.2.03.41.tgz
+　　https://sourceware.org/ftp/lvm2/LVM2.2.03.42.tgz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/LVM2.2.03.41.tgz -C ${BUILDDIR}
-pushd ${BUILDDIR}/LVM2.2.03.41
+tar xvf ${DOWNLOADDIR}/LVM2.2.03.42.tgz -C ${BUILDDIR}
+pushd ${BUILDDIR}/LVM2.2.03.42
     ./configure --prefix=/usr --libdir=/usr/lib32 --with-usrlibdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --enable-cmdlib --enable-pkgconfig --enable-udev_sync \
@@ -3261,11 +3266,11 @@ popd
 ```
 
 #### Boost
-　　https://archives.boost.io/release/1.91.0/source/boost_1_91_0.tar.bz2
+　　https://archives.boost.io/release/1.92.0/source/boost_1_92_0.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/boost_1_91_0.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/boost_1_91_0
+tar xvf ${DOWNLOADDIR}/boost_1_92_0.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/boost_1_92_0
     patch -Np1 -i ${DOWNLOADDIR}/0001-boost-add-loongarch32-support.patch
     ./bootstrap.sh ICU_ROOT=${SYSDIR}/sysroot/usr --prefix=/usr --libdir=/usr/lib32 --with-python=python3
     sed -i "/using gcc/s@using gcc@& : loongarch32 : ${CROSS_TARGET}-gcc@g" project-config.jam
@@ -3569,11 +3574,11 @@ popd
 ```
 
 #### Fontconfig
-　　https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.2/fontconfig-2.18.2.tar.gz
+　　https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/fontconfig-2.18.2.tar.gz -C ${BUILDDIR}
-pushd ${BUILDDIR}/fontconfig-2.18.2
+tar xvf ${DOWNLOADDIR}/fontconfig-2.18.3.tar.gz -C ${BUILDDIR}
+pushd ${BUILDDIR}/fontconfig-2.18.3
 	./configure --prefix=/usr --libdir=/usr/lib32 \
 		--build=${CROSS_HOST} --host=${CROSS_TARGET} \
 		--sysconfdir=/etc --localstatedir=/var --disable-docs
@@ -3660,11 +3665,11 @@ popd
 ```
 
 #### P11-Kit
-　　https://github.com/p11-glue/p11-kit/releases/download/0.26.4/p11-kit-0.26.4.tar.xz
+　　https://github.com/p11-glue/p11-kit/releases/download/0.26.5/p11-kit-0.26.5.tar.xz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/p11-kit-0.26.4.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/p11-kit-0.26.4
+tar xvf ${DOWNLOADDIR}/p11-kit-0.26.5.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/p11-kit-0.26.5
     mkdir cross-build
     pushd cross-build
         meson --prefix=/usr --libdir=/usr/lib32 \
@@ -4084,18 +4089,18 @@ popd
 ```
 
 #### PyCairo
-　　https://github.com/pygobject/pycairo/archive/v1.29.0/pycairo-1.29.0.tar.gz
+　　https://github.com/pygobject/pycairo/archive/v1.29.1/pycairo-1.29.1.tar.gz
 
 ```sh
-tar xvf ${DOWNLOADDIR}/pycairo-1.29.0.tar.gz -C ${BUILDDIR}
-cp -a ${BUILDDIR}/pycairo-1.29.0{,-native}
-pushd ${BUILDDIR}/pycairo-1.29.0-native
+tar xvf ${DOWNLOADDIR}/pycairo-1.29.1.tar.gz -C ${BUILDDIR}
+cp -a ${BUILDDIR}/pycairo-1.29.1{,-native}
+pushd ${BUILDDIR}/pycairo-1.29.1-native
     PKG_CONFIG_PATH="" \
     LDFLAGS="" PKG_CONFIG_SYSROOT_DIR="" ${SYSDIR}/cross-tools/bin/python3 setup.py build
     PKG_CONFIG_PATH="" \
     LDFLAGS="" PKG_CONFIG_SYSROOT_DIR="" ${SYSDIR}/cross-tools/bin/python3 setup.py install --optimize=1
 popd
-pushd ${BUILDDIR}/pycairo-1.29.0
+pushd ${BUILDDIR}/pycairo-1.29.1
         _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
         ${SYSDIR}/cross-tools/bin/python3 setup.py build
         _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_${CROSS_TARGET} \
@@ -4124,11 +4129,11 @@ popd
 ```
 
 #### Firewalld
-　　https://github.com/firewalld/firewalld/releases/download/v2.5.0/firewalld-2.5.0.tar.bz2
+　　https://github.com/firewalld/firewalld/releases/download/v2.5.1/firewalld-2.5.1.tar.bz2
 
 ```sh
-tar xvf ${DOWNLOADDIR}/firewalld-2.5.0.tar.bz2 -C ${BUILDDIR}
-pushd ${BUILDDIR}/firewalld-2.5.0
+tar xvf ${DOWNLOADDIR}/firewalld-2.5.1.tar.bz2 -C ${BUILDDIR}
+pushd ${BUILDDIR}/firewalld-2.5.1
     ./configure --prefix=/usr --libdir=/usr/lib32 \
                 --build=${CROSS_HOST} --host=${CROSS_TARGET} --disable-docs \
 		PYTHON=${SYSDIR}/cross-tools/bin/${CROSS_TARGET}-python3
